@@ -4,4 +4,4 @@ export interface LogEntry {
   level: 'debug' | 'info' | 'warn' | 'error'
   message: string
   meta?: Record<string, any> // 추가 정보
-}
+};
