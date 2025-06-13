@@ -1,0 +1,3 @@
+/logpilot-server/logs
+/logpilot-server/node_modules
+/logpilot-server/package-lock.json
