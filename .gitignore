@@ -1,3 +1,7 @@
-/logpilot-server/logs
-/logpilot-server/node_modules
-/logpilot-server/package-lock.json
+/logpilot-rest-server/logs
+/logpilot-rest-server/node_modules
+/logpilot-rest-server/package-lock.json
+
+/logpilot-grpc-server/logs
+/logpilot-grpc-server/node_modules
+/logpilot-grpc-server/package-lock.json
