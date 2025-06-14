@@ -116,6 +116,15 @@ client.SendLog(
 );
 
 ```
+## Example
+
+### REST Version
+For the REST version, please use your preferred HTTP client library (e.g., Axios, Fetch, etc.) to send logs.
+
+### gRPC Version
+The gRPC version is provided as an official client library.  
+You can refer to the example app here: [LogPilot-Lite Client Example](https://github.com/danpung2/LogPilot-Lite-Client-Example)
+
 
 ## LICENSE
 
