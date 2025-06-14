@@ -20,7 +20,7 @@ This package is intended to be bundled with your own source system and used to s
 Since this package is not published to npm, install it directly from a GitHub private repository:
 
 ```
-npm install git+https://<GITHUB_TOKEN>@github.com/your-name/LogPilot-Lite-Client.git
+npm install git+https://<GITHUB_TOKEN>@github.com/danpung2/LogPilot-Lite-Client.git
 ```
 
 > Make sure to replace `<GITHUB_TOKEN>` with your personal access token.
