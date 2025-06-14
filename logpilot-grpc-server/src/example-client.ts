@@ -12,23 +12,28 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   oneofs: true,
 });
 
-const proto = grpc.loadPackageDefinition(packageDefinition).logpilot as any;
+const logpilotProto = grpc.loadPackageDefinition(packageDefinition).logpilot as any;
 
-const client = new proto.LogService(
+const client = new logpilotProto.LogService(
   'localhost:50051',
   grpc.credentials.createInsecure()
 );
 
-const log = {
-  channel: 'test',
+// 로그 엔트리 구성
+const logEntry = {
+  channel: 'auth',
   level: 'info',
-  message: 'This is a test log from client',
-  meta: { clientId: 'test-client' },
+  message: '사용자 로그인 성공',
+  meta: {
+    userId: 'user123',
+    ip: '192.168.0.1'
+  },
+  storage: 'log' // 'sqlite' || 'log'
 };
 
-client.SendLog(log, (err: any, response: any) => {
+client.SendLog(logEntry, (err: grpc.ServiceError | null, response: any) => {
   if (err) {
-    console.error('❌ SendLog failed:', err);
+    console.error('❌ SendLog failed:', err.message);
   } else {
     console.log('✅ SendLog response:', response);
   }

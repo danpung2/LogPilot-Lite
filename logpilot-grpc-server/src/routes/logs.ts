@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { LogEntry } from '../types/log';
-import { writeLog } from '../services/logWriter';
+import { writeLog } from '../services/fileWriter';
 
 const router = Router();
 

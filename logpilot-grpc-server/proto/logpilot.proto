@@ -13,6 +13,7 @@ message LogEntry {
   string level = 2;
   string message = 3;
   map<string, string> meta = 4;
+  string storage = 5; // "log" | "sqlite" | default: "log"
 }
 
 // 응답 메시지

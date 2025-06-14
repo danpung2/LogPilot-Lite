@@ -1,7 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import path from 'path';
-import { writeLog } from './services/logWriter';
+import { writeEntry } from './services/storageRouter';
 
 const PROTO_PATH = path.join(__dirname, '../proto/logpilot.proto');
 
@@ -28,12 +28,12 @@ function sendLog(
 
   console.log('[RECV]', entry);
 
-  writeLog(entry).then(() => {
+  writeEntry(entry).then(() => {
     callback(null, { status: 'ok' });
   }).catch((err) => {
     console.error('Write error:', err);
     callback({ code: grpc.status.INTERNAL, message: 'Write failed' }, null);
-  })
+  });
 }
 
 const PORT = process.env.PORT || 50051;
@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 50051;
 export function startGrpcServer() {
   const server = new grpc.Server();
   server.addService(logpilotProto.LogService.service, { SendLog: sendLog });
-  server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
-    console.log(`🚀 LogPilot Rest Server listening on port ${PORT}`);
-  })
+  server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), () => {
+    console.log(`🚀 LogPilot gRPC Server listening on port ${PORT}`);
+  });
 }
