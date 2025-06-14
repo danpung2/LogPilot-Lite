@@ -9,7 +9,7 @@ This package is intended to be bundled with your own source system and used to s
 ## 🚀 Features
 
 - gRPC-based communication
-- Simple log interface: `sendLog(entry)`
+- Simple log interface: `send(entry)`
 - Configurable server address
 - Type-safe TypeScript implementation
 
