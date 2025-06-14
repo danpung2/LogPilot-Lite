@@ -1,0 +1,29 @@
+{
+  "name": "logpilot-lite",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "logpilot-rest-server",
+    "logpilot-grpc-server"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "dev:rest": "ts-node-dev --require tsconfig-paths/register logpilot-rest-server/src/server.ts",
+    "dev:grpc": "ts-node-dev --require tsconfig-paths/register logpilot-grpc-server/src/server.ts"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.7.15",
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.1",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.3"
+  }
+}

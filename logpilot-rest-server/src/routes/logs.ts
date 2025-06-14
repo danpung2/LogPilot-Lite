@@ -1,28 +1,33 @@
 import { Router, Request, Response } from 'express';
-import { LogEntry } from '../types/log';
-import { writeLog } from '../services/logWriter';
+import { writeLogToFile } from '@shared/services/fileWriter';
+import { writeLogToSQLite } from '@shared/services/sqliteWriter';
+import { LogEntry } from '@shared/types/log';
 
 const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
-  const entry = req.body as LogEntry;
-
-    if (!entry.timestamp) {
-        entry.timestamp = Date.now();
-    }
-
-
-  if (!entry.channel || !entry.message || !entry.level) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
   try {
-    await writeLog(entry);
-    return res.status(200).json({ status: 'ok' });
+    const clientEntry = req.body;
+
+    const logEntry = {
+      ...clientEntry,
+      timestamp: Date.now(),
+    }  as LogEntry;
+
+    console.log('[RECV]', logEntry);
+
+    await writeEntry(logEntry);
+
+    res.status(200).json({ status: 'ok' });
   } catch (err) {
-    console.error('Log write error:', err);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Write error:', err);
+    res.status(500).json({ error: 'Write failed' });
   }
-})
+});
+
+async function writeEntry(entry: LogEntry & { timestamp: number }): Promise<void> {
+  const type = entry.storage || 'file';
+  return type === 'sqlite' ? writeLogToSQLite(entry) : writeLogToFile(entry);
+}
 
 export default router;

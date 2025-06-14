@@ -4,13 +4,13 @@
     "module": "CommonJS",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["shared/*"]
     },
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
-  "include": ["src", "../shared", "../tsconfig.json"]
+  "include": ["logpilot-*/src", "shared/**/*"]
 }

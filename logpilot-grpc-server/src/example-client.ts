@@ -19,22 +19,18 @@ const client = new logpilotProto.LogService(
   grpc.credentials.createInsecure()
 );
 
-// 로그 엔트리 구성
-const logEntry = {
+const logRequest = {
   channel: 'auth',
   level: 'info',
-  message: '사용자 로그인 성공',
-  meta: {
-    userId: 'user123',
-    ip: '192.168.0.1'
-  },
-  storage: 'log' // 'sqlite' || 'log'
+  message: 'User login succeeded',
+  meta: { userId: '123', ip: '192.168.0.1' },
+  storage: 'file', // 또는 'sqlite'
 };
 
-client.SendLog(logEntry, (err: grpc.ServiceError | null, response: any) => {
+client.SendLog(logRequest, (err: grpc.ServiceError | null, response: any) => {
   if (err) {
     console.error('❌ SendLog failed:', err.message);
   } else {
-    console.log('✅ SendLog response:', response);
+    console.log('✅ SendLog success:', response);
   }
 });

@@ -1,7 +1,10 @@
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import path from 'path';
-import { writeEntry } from './services/storageRouter';
+
+import { writeLogToFile } from '@shared/services/fileWriter';
+import { writeLogToSQLite } from '@shared/services/sqliteWriter';
+import { LogEntry } from '@shared/types/log';
 
 const PROTO_PATH = path.join(__dirname, '../proto/logpilot.proto');
 
@@ -18,27 +21,32 @@ const logpilotProto = grpc.loadPackageDefinition(packageDefinition).logpilot as 
 function sendLog(
   call: grpc.ServerUnaryCall<any, any>,
   callback: grpc.sendUnaryData<any>
-) {
+): void {
   const clientEntry = call.request;
 
-  const entry = {
+  const logEntry = {
     ...clientEntry,
     timestamp: Date.now(),
-  };
+  }  as LogEntry;
 
-  console.log('[RECV]', entry);
+  console.log('[RECV]', logEntry);
 
-  writeEntry(entry).then(() => {
-    callback(null, { status: 'ok' });
-  }).catch((err) => {
-    console.error('Write error:', err);
-    callback({ code: grpc.status.INTERNAL, message: 'Write failed' }, null);
-  });
+  writeEntry(logEntry)
+    .then(() => callback(null, { status: 'ok' }))
+    .catch((err) => {
+      console.error('Write error:', err);
+      callback({ code: grpc.status.INTERNAL, message: 'Write failed' }, null);
+    });
 }
 
-const PORT = process.env.PORT || 50051;
+function writeEntry(entry: LogEntry & { timestamp: number }): Promise<void> {
+  const type = entry.storage || 'file';
+  return type === 'sqlite' ? writeLogToSQLite(entry) : writeLogToFile(entry);
+}
 
-export function startGrpcServer() {
+const PORT = process.env.GRPC_PORT || 50051;
+
+export function startGrpcServer(): void {
   const server = new grpc.Server();
   server.addService(logpilotProto.LogService.service, { SendLog: sendLog });
   server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), () => {

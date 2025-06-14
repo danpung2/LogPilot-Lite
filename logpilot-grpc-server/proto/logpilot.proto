@@ -3,20 +3,17 @@ syntax = "proto3";
 package logpilot;
 
 service LogService {
-  // 로그 전송
-  rpc SendLog (LogEntry) returns (LogResponse);
+  rpc SendLog (LogRequest) returns (LogResponse);
 }
 
-// 로그 메시지
-message LogEntry {
+message LogRequest {
   string channel = 1;
   string level = 2;
   string message = 3;
   map<string, string> meta = 4;
-  string storage = 5; // "log" | "sqlite" | default: "log"
+  string storage = 5; // "file" or "sqlite"
 }
 
-// 응답 메시지
 message LogResponse {
-  string status = 1;
+  string status = 1; // "ok" or error 메시지
 }
