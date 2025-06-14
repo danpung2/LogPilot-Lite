@@ -30,9 +30,11 @@ npm install git+https://<GITHUB_TOKEN>@github.com/your-name/LogPilot-Lite-Client
 ## 🛠 Usage
 
 ```ts
-import { sendLog } from 'logpilot-lite-client';
+import { LogPilotClient } from "logpilot-lite-client";
 
-await sendLog({
+const client = new LogPilotClient(process.env.LOGPILOT_SERVER_URL || "localhost:50051");
+
+client.send({
   channel: 'job',
   level: 'ERROR',
   message: 'Token cleanup failed',
