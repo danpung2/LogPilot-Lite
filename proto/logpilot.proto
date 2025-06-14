@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package logpilot;
+
+service LogService {
+  rpc SendLog (LogRequest) returns (LogResponse);
+}
+
+message LogRequest {
+  string channel = 1;
+  string level = 2;
+  string message = 3;
+  map<string, string> meta = 4;
+  string storage = 5; // "file" or "sqlite"
+}
+
+message LogResponse {
+  string status = 1; // "ok" or error 메시지
+}

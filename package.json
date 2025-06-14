@@ -1,0 +1,20 @@
+{
+  "name": "logpilot-lite-client",
+  "version": "0.0.1",
+  "description": "gRPC client for LogPilot-Lite gRPC",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["log", "grpc", "client", "logpilot"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+	"@grpc/proto-loader": "^0.7.15"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
