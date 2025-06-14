@@ -6,7 +6,7 @@
 
 ---
 
-## ✨ Feature
+## ✨ Features
 
 - ✅ Rest API 버전과 gRPC 버전 제공
 - ✅ file(.log) 저장과 sqlite 저장 제공
