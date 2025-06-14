@@ -34,7 +34,7 @@ import { LogPilotClient } from "logpilot-lite-client";
 
 const client = new LogPilotClient(process.env.LOGPILOT_SERVER_URL || "localhost:50051");
 
-client.send({
+await client.send({
   channel: 'job',
   level: 'ERROR',
   message: 'Token cleanup failed',
