@@ -4,7 +4,9 @@
     "module": "CommonJS",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["shared/*"],
+      "@grpc-server/*": ["logpilot-grpc-server/src/*"],
+      "@rest-server/*": ["logpilot-rest-server/src/*"],
     },
     "outDir": "./dist",
     "esModuleInterop": true,
@@ -12,5 +14,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["logpilot-*/src", "shared/**/*"]
+  "include": ["logpilot-*/src", "shared/**/*", "start-server.ts"]
 }

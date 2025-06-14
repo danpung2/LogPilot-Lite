@@ -1,19 +1,17 @@
-import path from "path";
-import dotenv from "dotenv";
+import express from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
+import router from './routes/logs';
 
-dotenv.config({
-	path: path.resolve(__dirname, "../../.env"),
-});
+export function startRestServer(): void {
+  dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-import express from "express";
-import logsRoute from "./routes/logs";
+  const app = express();
+  app.use(express.json());
+  app.use('/logs', router);
 
-const app = express();
-app.use(express.json());
-
-app.use("/logs", logsRoute);
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-	console.log(`🚀 LogPilot Rest Server listening on port ${PORT}`);
-});
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => {
+    console.log(`🚀 LogPilot REST Server listening on port ${PORT}`);
+  });
+}

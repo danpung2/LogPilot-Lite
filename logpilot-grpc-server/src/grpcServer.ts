@@ -46,7 +46,7 @@ function writeEntry(entry: LogEntry & { timestamp: number }): Promise<void> {
 
 const PORT = process.env.GRPC_PORT || 50051;
 
-export function startGrpcServer(): void {
+export function startGrpcServerImpl(): void {
   const server = new grpc.Server();
   server.addService(logpilotProto.LogService.service, { SendLog: sendLog });
   server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), () => {
