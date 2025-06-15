@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LogPilotClient = void 0;
+exports.LogPilotProducer = void 0;
 const grpc = __importStar(require("@grpc/grpc-js"));
 const protoLoader = __importStar(require("@grpc/proto-loader"));
 const path_1 = __importDefault(require("path"));
@@ -49,7 +49,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     oneofs: true,
 });
 const proto = grpc.loadPackageDefinition(packageDefinition);
-class LogPilotClient {
+class LogPilotProducer {
     constructor(address) {
         this.client = new proto.logpilot.LogService(address, grpc.credentials.createInsecure());
     }
@@ -66,4 +66,4 @@ class LogPilotClient {
         });
     }
 }
-exports.LogPilotClient = LogPilotClient;
+exports.LogPilotProducer = LogPilotProducer;

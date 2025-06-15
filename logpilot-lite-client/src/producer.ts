@@ -15,7 +15,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 
 const proto = grpc.loadPackageDefinition(packageDefinition) as any;
 
-export class LogPilotClient {
+export class LogPilotProducer {
   private client: any;
 
   constructor(address: string) {

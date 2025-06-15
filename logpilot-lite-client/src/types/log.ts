@@ -4,4 +4,5 @@ export interface LogEntry {
   message: string;
   meta?: Record<string, any>;
   storage?: 'file' | 'sqlite';
+  timestamp?: number;
 }
