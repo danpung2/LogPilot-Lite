@@ -1,55 +1,90 @@
-import * as grpc from '@grpc/grpc-js';
-import * as protoLoader from '@grpc/proto-loader';
-import path from 'path';
+import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
+import {
+	LogEntry as ResponseLogEntry,
+	FetchLogsRequest,
+	FetchLogsResponse,
+	LogResponse,
+	LogRequest,
+} from "../proto/logpilot";
+import { LogEntry as SaveLogEntry } from "@shared/types/log";
+import { LogServiceService } from "../proto/logpilot";
+import { readLogsFromSQLite } from "@shared/services/sqliteReader";
+import { readLogsFromFile } from "@shared/services/fileReader";
+import { writeLogToFile } from "@shared/services/fileWriter";
+import { writeLogToSQLite } from "@shared/services/sqliteWriter";
 
-import { writeLogToFile } from '@shared/services/fileWriter';
-import { writeLogToSQLite } from '@shared/services/sqliteWriter';
-import { LogEntry } from '@shared/types/log';
+export const LogServiceHandlers = {
+	sendLog: async (
+		call: ServerUnaryCall<LogRequest, LogResponse>,
+		callback: sendUnaryData<LogResponse>
+	) => {
+		const request = call.request;
+		const entry = {
+			...request,
+			timestamp: Date.now(),
+			meta: request.meta ?? {},
+		} as SaveLogEntry;
 
-const PROTO_PATH = path.join(__dirname, '../proto/logpilot.proto');
+		const type = request.storage || "file";
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
+		try {
+			if (type === "sqlite") {
+				await writeLogToSQLite(entry);
+			} else if (type === "file") {
+				await writeLogToFile(entry);
+			} else {
+				return callback(
+					new Error(`Unsupported storage: ${type}`),
+					null
+				);
+			}
 
-const logpilotProto = grpc.loadPackageDefinition(packageDefinition).logpilot as any;
+			console.log("[✅ SAVED]", entry);
+			callback(null, {
+				status: "ok",
+				message: "Log stored successfully",
+			});
+		} catch (err) {
+			console.error("[❌ WRITE FAILED]", err);
+			callback(err as Error, null);
+		}
+	},
 
-function sendLog(
-  call: grpc.ServerUnaryCall<any, any>,
-  callback: grpc.sendUnaryData<any>
-): void {
-  const clientEntry = call.request;
+	fetchLogs: async (
+		call: ServerUnaryCall<FetchLogsRequest, FetchLogsResponse>,
+		callback: sendUnaryData<FetchLogsResponse>
+	) => {
+		const { since, channel, limit = 100, storage } = call.request;
 
-  const logEntry = {
-    ...clientEntry,
-    timestamp: Date.now(),
-  }  as LogEntry;
+		if (!since || !channel || !storage) {
+			return callback(new Error("Missing required fields"), null);
+		}
 
-  console.log('[RECV]', logEntry);
+		const sinceTime = Number(since);
+		const readFn =
+			storage === "sqlite"
+				? readLogsFromSQLite
+				: storage === "file"
+				? readLogsFromFile
+				: null;
 
-  writeEntry(logEntry)
-    .then(() => callback(null, { status: 'ok' }))
-    .catch((err) => {
-      console.error('Write error:', err);
-      callback({ code: grpc.status.INTERNAL, message: 'Write failed' }, null);
-    });
-}
+		if (!readFn) {
+			return callback(new Error("Unsupported storage"), null);
+		}
 
-function writeEntry(entry: LogEntry & { timestamp: number }): Promise<void> {
-  const type = entry.storage || 'file';
-  return type === 'sqlite' ? writeLogToSQLite(entry) : writeLogToFile(entry);
-}
+		try {
+			const rawLogs = await readFn(sinceTime, channel, limit);
 
-const PORT = process.env.GRPC_PORT || 50051;
+			const logs: ResponseLogEntry[] = rawLogs.map((log) => ({
+				...log,
+				meta: log.meta ?? {},
+			}));
 
-export function startGrpcServerImpl(): void {
-  const server = new grpc.Server();
-  server.addService(logpilotProto.LogService.service, { SendLog: sendLog });
-  server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), () => {
-    console.log(`🚀 LogPilot gRPC Server listening on port ${PORT}`);
-  });
-}
+			callback(null, { logs });
+		} catch (err) {
+			callback(err as Error, null);
+		}
+	},
+};
+
+export { LogServiceService };

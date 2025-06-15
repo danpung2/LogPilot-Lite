@@ -23,7 +23,9 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.1",
+    "grpc-tools": "^1.13.0",
     "ts-node-dev": "^2.0.0",
+    "ts-proto": "^2.7.5",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   }

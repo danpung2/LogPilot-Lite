@@ -5,6 +5,7 @@ package logpilot;
 service LogService {
   rpc SendLog (LogRequest) returns (LogResponse);
   rpc ListLogs (ListLogsRequest) returns (ListLogsResponse);
+  rpc FetchLogs (FetchLogsRequest) returns (FetchLogsResponse);
 }
 
 message LogRequest {
@@ -21,11 +22,26 @@ message LogResponse {
 }
 
 message ListLogsRequest {
-  string storage = 1;              // "file" or "sqlite"
-  string channel = 2;              // optional filter
-  string level = 3;                // optional filter
-  int64 fromTimestamp = 4;        // optional
-  int64 toTimestamp = 5;          // optional
+  string storage = 1;
+  string channel = 2;
+  string level = 3;
+  int64 fromTimestamp = 4;
+  int64 toTimestamp = 5;
+}
+
+message ListLogsResponse {
+  repeated LogEntry logs = 1;
+}
+
+message FetchLogsRequest {
+  string since = 1;
+  string channel = 2;
+  int32 limit = 3;
+  string storage = 4;
+}
+
+message FetchLogsResponse {
+  repeated LogEntry logs = 1;
 }
 
 message LogEntry {
@@ -34,8 +50,4 @@ message LogEntry {
   string message = 3;
   map<string, string> meta = 4;
   int64 timestamp = 5;
-}
-
-message ListLogsResponse {
-  repeated LogEntry logs = 1;
 }
