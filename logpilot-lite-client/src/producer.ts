@@ -1,15 +1,28 @@
-import { LogServiceClient, LogRequest } from '../proto/logpilot';
-import { credentials } from '@grpc/grpc-js';
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
+import path from 'path';
+import { LogEntry } from './types/log';
 
-const client = new LogServiceClient(
-  process.env.LOGPILOT_SERVER_URL || 'localhost:50051',
-  credentials.createInsecure()
-);
+const PROTO_PATH = path.join(__dirname, '../proto/logpilot.proto');
+const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+});
+const proto = grpc.loadPackageDefinition(packageDefinition) as any;
 
 export class LogPilotProducer {
-  produce(entry: LogRequest): Promise<void> {
+  private client: any;
+
+  constructor(address: string) {
+    this.client = new proto.logpilot.LogService(address, grpc.credentials.createInsecure());
+  }
+
+  produce(entry: LogEntry): Promise<void> {
     return new Promise((resolve, reject) => {
-      client.sendLog(entry, (err, response) => {
+      this.client.sendLog(entry, (err: grpc.ServiceError | null, response: any) => {
         if (err) {
           reject(err);
         } else {

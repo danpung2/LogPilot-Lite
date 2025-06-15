@@ -1,4 +1,6 @@
-import { LogRequest } from '../proto/logpilot';
+import { LogEntry } from './types/log';
 export declare class LogPilotProducer {
-    produce(entry: LogRequest): Promise<void>;
+    private client;
+    constructor(address: string);
+    produce(entry: LogEntry): Promise<void>;
 }
