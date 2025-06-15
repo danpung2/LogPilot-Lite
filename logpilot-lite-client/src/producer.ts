@@ -22,7 +22,7 @@ export class LogPilotProducer {
 
   produce(entry: LogEntry): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.client.sendLog(entry, (err: grpc.ServiceError | null, response: any) => {
+      this.client.SendLog(entry, (err: grpc.ServiceError | null, response: any) => {
         if (err) {
           reject(err);
         } else {

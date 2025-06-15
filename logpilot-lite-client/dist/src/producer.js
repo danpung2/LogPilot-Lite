@@ -55,7 +55,7 @@ class LogPilotProducer {
     }
     produce(entry) {
         return new Promise((resolve, reject) => {
-            this.client.sendLog(entry, (err, response) => {
+            this.client.SendLog(entry, (err, response) => {
                 if (err) {
                     reject(err);
                 }
