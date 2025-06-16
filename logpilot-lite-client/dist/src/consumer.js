@@ -4,15 +4,16 @@ exports.LogPilotConsumer = void 0;
 const grpcClient_1 = require("./grpcClient");
 const offsetStore_1 = require("./offsetStore");
 class LogPilotConsumer {
-    constructor(consumerId, channel) {
+    constructor(consumerId, channel, storage) {
         this.consumerId = consumerId;
         this.channel = channel;
+        this.storage = storage;
     }
     async consume() {
         const offset = Number((0, offsetStore_1.getOffset)(this.consumerId)) || 0;
         let logs;
         try {
-            logs = await (0, grpcClient_1.fetchLogsSince)(offset, this.channel);
+            logs = await (0, grpcClient_1.fetchLogsSince)(offset, this.channel, this.storage);
         }
         catch (err) {
             console.error(`[${this.consumerId}] ❌ Failed to fetch logs:`, err);

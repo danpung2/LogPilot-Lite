@@ -2,7 +2,7 @@
 // versions:
 //   protoc-gen-ts_proto  v2.7.5
 //   protoc               v5.29.3
-// source: logpilot.proto
+// source: proto/logpilot.proto
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
@@ -40,22 +40,22 @@ export interface LogResponse {
 }
 
 export interface ListLogsRequest {
-  /** "file" or "sqlite" */
   storage: string;
-  /** optional filter */
   channel: string;
-  /** optional filter */
   level: string;
-  /** optional */
   fromTimestamp: number;
-  /** optional */
   toTimestamp: number;
+}
+
+export interface ListLogsResponse {
+  logs: LogEntry[];
 }
 
 export interface FetchLogsRequest {
   since: string;
   channel: string;
   limit: number;
+  storage: string;
 }
 
 export interface FetchLogsResponse {
@@ -73,10 +73,6 @@ export interface LogEntry {
 export interface LogEntry_MetaEntry {
   key: string;
   value: string;
-}
-
-export interface ListLogsResponse {
-  logs: LogEntry[];
 }
 
 function createBaseLogRequest(): LogRequest {
@@ -498,8 +494,66 @@ export const ListLogsRequest: MessageFns<ListLogsRequest> = {
   },
 };
 
+function createBaseListLogsResponse(): ListLogsResponse {
+  return { logs: [] };
+}
+
+export const ListLogsResponse: MessageFns<ListLogsResponse> = {
+  encode(message: ListLogsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.logs) {
+      LogEntry.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ListLogsResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListLogsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.logs.push(LogEntry.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListLogsResponse {
+    return { logs: globalThis.Array.isArray(object?.logs) ? object.logs.map((e: any) => LogEntry.fromJSON(e)) : [] };
+  },
+
+  toJSON(message: ListLogsResponse): unknown {
+    const obj: any = {};
+    if (message.logs?.length) {
+      obj.logs = message.logs.map((e) => LogEntry.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ListLogsResponse>, I>>(base?: I): ListLogsResponse {
+    return ListLogsResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ListLogsResponse>, I>>(object: I): ListLogsResponse {
+    const message = createBaseListLogsResponse();
+    message.logs = object.logs?.map((e) => LogEntry.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 function createBaseFetchLogsRequest(): FetchLogsRequest {
-  return { since: "", channel: "", limit: 0 };
+  return { since: "", channel: "", limit: 0, storage: "" };
 }
 
 export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
@@ -512,6 +566,9 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     }
     if (message.limit !== 0) {
       writer.uint32(24).int32(message.limit);
+    }
+    if (message.storage !== "") {
+      writer.uint32(34).string(message.storage);
     }
     return writer;
   },
@@ -547,6 +604,14 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
           message.limit = reader.int32();
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.storage = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -561,6 +626,7 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
       since: isSet(object.since) ? globalThis.String(object.since) : "",
       channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
+      storage: isSet(object.storage) ? globalThis.String(object.storage) : "",
     };
   },
 
@@ -575,6 +641,9 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     if (message.limit !== 0) {
       obj.limit = Math.round(message.limit);
     }
+    if (message.storage !== "") {
+      obj.storage = message.storage;
+    }
     return obj;
   },
 
@@ -586,6 +655,7 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     message.since = object.since ?? "";
     message.channel = object.channel ?? "";
     message.limit = object.limit ?? 0;
+    message.storage = object.storage ?? "";
     return message;
   },
 };
@@ -863,64 +933,6 @@ export const LogEntry_MetaEntry: MessageFns<LogEntry_MetaEntry> = {
     const message = createBaseLogEntry_MetaEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
-    return message;
-  },
-};
-
-function createBaseListLogsResponse(): ListLogsResponse {
-  return { logs: [] };
-}
-
-export const ListLogsResponse: MessageFns<ListLogsResponse> = {
-  encode(message: ListLogsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.logs) {
-      LogEntry.encode(v!, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): ListLogsResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseListLogsResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.logs.push(LogEntry.decode(reader, reader.uint32()));
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ListLogsResponse {
-    return { logs: globalThis.Array.isArray(object?.logs) ? object.logs.map((e: any) => LogEntry.fromJSON(e)) : [] };
-  },
-
-  toJSON(message: ListLogsResponse): unknown {
-    const obj: any = {};
-    if (message.logs?.length) {
-      obj.logs = message.logs.map((e) => LogEntry.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<ListLogsResponse>, I>>(base?: I): ListLogsResponse {
-    return ListLogsResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<ListLogsResponse>, I>>(object: I): ListLogsResponse {
-    const message = createBaseListLogsResponse();
-    message.logs = object.logs?.map((e) => LogEntry.fromPartial(e)) || [];
     return message;
   },
 };

@@ -3,9 +3,9 @@
 // versions:
 //   protoc-gen-ts_proto  v2.7.5
 //   protoc               v5.29.3
-// source: logpilot.proto
+// source: proto/logpilot.proto
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LogServiceClient = exports.LogServiceService = exports.ListLogsResponse = exports.LogEntry_MetaEntry = exports.LogEntry = exports.FetchLogsResponse = exports.FetchLogsRequest = exports.ListLogsRequest = exports.LogResponse = exports.LogRequest_MetaEntry = exports.LogRequest = exports.protobufPackage = void 0;
+exports.LogServiceClient = exports.LogServiceService = exports.LogEntry_MetaEntry = exports.LogEntry = exports.FetchLogsResponse = exports.FetchLogsRequest = exports.ListLogsResponse = exports.ListLogsRequest = exports.LogResponse = exports.LogRequest_MetaEntry = exports.LogRequest = exports.protobufPackage = void 0;
 /* eslint-disable */
 const wire_1 = require("@bufbuild/protobuf/wire");
 const grpc_js_1 = require("@grpc/grpc-js");
@@ -391,8 +391,59 @@ exports.ListLogsRequest = {
         return message;
     },
 };
+function createBaseListLogsResponse() {
+    return { logs: [] };
+}
+exports.ListLogsResponse = {
+    encode(message, writer = new wire_1.BinaryWriter()) {
+        for (const v of message.logs) {
+            exports.LogEntry.encode(v, writer.uint32(10).fork()).join();
+        }
+        return writer;
+    },
+    decode(input, length) {
+        const reader = input instanceof wire_1.BinaryReader ? input : new wire_1.BinaryReader(input);
+        const end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseListLogsResponse();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1: {
+                    if (tag !== 10) {
+                        break;
+                    }
+                    message.logs.push(exports.LogEntry.decode(reader, reader.uint32()));
+                    continue;
+                }
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skip(tag & 7);
+        }
+        return message;
+    },
+    fromJSON(object) {
+        return { logs: globalThis.Array.isArray(object?.logs) ? object.logs.map((e) => exports.LogEntry.fromJSON(e)) : [] };
+    },
+    toJSON(message) {
+        const obj = {};
+        if (message.logs?.length) {
+            obj.logs = message.logs.map((e) => exports.LogEntry.toJSON(e));
+        }
+        return obj;
+    },
+    create(base) {
+        return exports.ListLogsResponse.fromPartial(base ?? {});
+    },
+    fromPartial(object) {
+        const message = createBaseListLogsResponse();
+        message.logs = object.logs?.map((e) => exports.LogEntry.fromPartial(e)) || [];
+        return message;
+    },
+};
 function createBaseFetchLogsRequest() {
-    return { since: "", channel: "", limit: 0 };
+    return { since: "", channel: "", limit: 0, storage: "" };
 }
 exports.FetchLogsRequest = {
     encode(message, writer = new wire_1.BinaryWriter()) {
@@ -404,6 +455,9 @@ exports.FetchLogsRequest = {
         }
         if (message.limit !== 0) {
             writer.uint32(24).int32(message.limit);
+        }
+        if (message.storage !== "") {
+            writer.uint32(34).string(message.storage);
         }
         return writer;
     },
@@ -435,6 +489,13 @@ exports.FetchLogsRequest = {
                     message.limit = reader.int32();
                     continue;
                 }
+                case 4: {
+                    if (tag !== 34) {
+                        break;
+                    }
+                    message.storage = reader.string();
+                    continue;
+                }
             }
             if ((tag & 7) === 4 || tag === 0) {
                 break;
@@ -448,6 +509,7 @@ exports.FetchLogsRequest = {
             since: isSet(object.since) ? globalThis.String(object.since) : "",
             channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
             limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
+            storage: isSet(object.storage) ? globalThis.String(object.storage) : "",
         };
     },
     toJSON(message) {
@@ -461,6 +523,9 @@ exports.FetchLogsRequest = {
         if (message.limit !== 0) {
             obj.limit = Math.round(message.limit);
         }
+        if (message.storage !== "") {
+            obj.storage = message.storage;
+        }
         return obj;
     },
     create(base) {
@@ -471,6 +536,7 @@ exports.FetchLogsRequest = {
         message.since = object.since ?? "";
         message.channel = object.channel ?? "";
         message.limit = object.limit ?? 0;
+        message.storage = object.storage ?? "";
         return message;
     },
 };
@@ -722,57 +788,6 @@ exports.LogEntry_MetaEntry = {
         const message = createBaseLogEntry_MetaEntry();
         message.key = object.key ?? "";
         message.value = object.value ?? "";
-        return message;
-    },
-};
-function createBaseListLogsResponse() {
-    return { logs: [] };
-}
-exports.ListLogsResponse = {
-    encode(message, writer = new wire_1.BinaryWriter()) {
-        for (const v of message.logs) {
-            exports.LogEntry.encode(v, writer.uint32(10).fork()).join();
-        }
-        return writer;
-    },
-    decode(input, length) {
-        const reader = input instanceof wire_1.BinaryReader ? input : new wire_1.BinaryReader(input);
-        const end = length === undefined ? reader.len : reader.pos + length;
-        const message = createBaseListLogsResponse();
-        while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-                case 1: {
-                    if (tag !== 10) {
-                        break;
-                    }
-                    message.logs.push(exports.LogEntry.decode(reader, reader.uint32()));
-                    continue;
-                }
-            }
-            if ((tag & 7) === 4 || tag === 0) {
-                break;
-            }
-            reader.skip(tag & 7);
-        }
-        return message;
-    },
-    fromJSON(object) {
-        return { logs: globalThis.Array.isArray(object?.logs) ? object.logs.map((e) => exports.LogEntry.fromJSON(e)) : [] };
-    },
-    toJSON(message) {
-        const obj = {};
-        if (message.logs?.length) {
-            obj.logs = message.logs.map((e) => exports.LogEntry.toJSON(e));
-        }
-        return obj;
-    },
-    create(base) {
-        return exports.ListLogsResponse.fromPartial(base ?? {});
-    },
-    fromPartial(object) {
-        const message = createBaseListLogsResponse();
-        message.logs = object.logs?.map((e) => exports.LogEntry.fromPartial(e)) || [];
         return message;
     },
 };

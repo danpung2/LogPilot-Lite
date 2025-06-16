@@ -1,11 +1,12 @@
 import { fetchLogsSince } from './grpcClient';
 import { getOffset, setOffset } from './offsetStore';
-import { LogEntry } from '../proto/logpilot';
+import { LogEntry } from './../proto/logpilot';
 
 export class LogPilotConsumer {
   constructor(
     private consumerId: string,
-    private channel: string
+    private channel: string,
+    private storage: string,
   ) {}
 
   async consume(): Promise<void> {
@@ -13,7 +14,7 @@ export class LogPilotConsumer {
 
     let logs: LogEntry[];
     try {
-      logs = await fetchLogsSince(offset, this.channel);
+      logs = await fetchLogsSince(offset, this.channel, this.storage);
     } catch (err) {
       console.error(`[${this.consumerId}] ❌ Failed to fetch logs:`, err);
       return;

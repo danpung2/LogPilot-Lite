@@ -1,4 +1,4 @@
-import { LogEntry, FetchLogsRequest, FetchLogsResponse, LogServiceClient } from '../proto/logpilot';
+import { LogServiceClient, LogEntry, FetchLogsRequest, FetchLogsResponse } from './../proto/logpilot';
 import { credentials } from '@grpc/grpc-js';
 
 const client = new LogServiceClient(
@@ -9,12 +9,14 @@ const client = new LogServiceClient(
 export async function fetchLogsSince(
   since: number,
   channel: string,
+  storage: string,
   limit: number = 100
 ): Promise<LogEntry[]> {
   const request: FetchLogsRequest = {
     since: since.toString(),
     channel,
-    limit
+    limit,
+    storage,
   };
 
   return new Promise((resolve, reject) => {

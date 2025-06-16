@@ -19,21 +19,20 @@ export interface LogResponse {
     message: string;
 }
 export interface ListLogsRequest {
-    /** "file" or "sqlite" */
     storage: string;
-    /** optional filter */
     channel: string;
-    /** optional filter */
     level: string;
-    /** optional */
     fromTimestamp: number;
-    /** optional */
     toTimestamp: number;
+}
+export interface ListLogsResponse {
+    logs: LogEntry[];
 }
 export interface FetchLogsRequest {
     since: string;
     channel: string;
     limit: number;
+    storage: string;
 }
 export interface FetchLogsResponse {
     logs: LogEntry[];
@@ -51,18 +50,15 @@ export interface LogEntry_MetaEntry {
     key: string;
     value: string;
 }
-export interface ListLogsResponse {
-    logs: LogEntry[];
-}
 export declare const LogRequest: MessageFns<LogRequest>;
 export declare const LogRequest_MetaEntry: MessageFns<LogRequest_MetaEntry>;
 export declare const LogResponse: MessageFns<LogResponse>;
 export declare const ListLogsRequest: MessageFns<ListLogsRequest>;
+export declare const ListLogsResponse: MessageFns<ListLogsResponse>;
 export declare const FetchLogsRequest: MessageFns<FetchLogsRequest>;
 export declare const FetchLogsResponse: MessageFns<FetchLogsResponse>;
 export declare const LogEntry: MessageFns<LogEntry>;
 export declare const LogEntry_MetaEntry: MessageFns<LogEntry_MetaEntry>;
-export declare const ListLogsResponse: MessageFns<ListLogsResponse>;
 export type LogServiceService = typeof LogServiceService;
 export declare const LogServiceService: {
     readonly sendLog: {

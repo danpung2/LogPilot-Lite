@@ -1,6 +1,7 @@
 export declare class LogPilotConsumer {
     private consumerId;
     private channel;
-    constructor(consumerId: string, channel: string);
+    private storage;
+    constructor(consumerId: string, channel: string, storage: string);
     consume(): Promise<void>;
 }
