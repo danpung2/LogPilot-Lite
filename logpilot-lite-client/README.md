@@ -9,7 +9,7 @@ This package is intended to be bundled with your own source system and used to s
 ## 🚀 Features
 
 - gRPC-based communication
-- Simple log interface: `send(entry)`
+- Simple log interface: `produce(entry)`
 - Configurable server address
 - Type-safe TypeScript implementation
 
@@ -34,7 +34,7 @@ import { LogPilotClient } from "logpilot-lite-client";
 
 const client = new LogPilotClient(process.env.LOGPILOT_SERVER_URL || "localhost:50051");
 
-await client.send({
+await client.produce({
   channel: 'job',
   level: 'ERROR',
   message: 'Token cleanup failed',
@@ -47,13 +47,13 @@ await client.send({
 
 ## 📄 Log Entry Format
 
-| Field    | Type                     | Required | Description                                                                 |
-|----------|--------------------------|----------|-----------------------------------------------------------------------------|
-| channel  | `string`                 | ✅ Yes   | The source or category of the log (e.g., "auth", "payment", "system")       |
-| level    | `string`                 | ✅ Yes   | Log severity level ("DEBUG", "INFO", "WARN", "ERROR")                       |
-| message  | `string`                 | ✅ Yes   | Human-readable log message                                                  |
-| meta     | `Record<string, any>`    | ❌ No    | Optional metadata (user ID, IP address, etc.)                              |
-| storage  | `"file"` or `"sqlite"`  | ❌ No    | Storage type. Defaults to `"file"` if omitted                               |
+| Field     | Type                     | Required | Description |
+|-----------|--------------------------|----------|-------------|
+| `channel` | `string`                 | ✅ Yes   | The source or category of the log (e.g., `"auth"`, `"payment"`, `"system"`) |
+| `level`   | `string`                 | ✅ Yes   | Log severity level. Common values: `"DEBUG"`, `"INFO"`, `"WARN"`, `"ERROR"` |
+| `message` | `string`                 | ✅ Yes   | Human-readable log message |
+| `meta`    | `object` (key-value map) | ❌ No    | Optional metadata for the log (e.g., user ID, IP address, etc.) |
+| `storage` | `"file"` or `"sqlite"`   | ❌ No    | Determines how the log is stored. Defaults to `"file"` if omitted |
 
 ---
 
