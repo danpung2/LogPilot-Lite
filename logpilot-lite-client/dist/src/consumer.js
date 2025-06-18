@@ -17,21 +17,18 @@ class LogPilotConsumer {
         }
         catch (err) {
             console.error(`[${this.consumerId}] ❌ Failed to fetch logs:`, err);
-            return;
+            return err;
         }
         if (!logs.length) {
-            console.log(`[${this.consumerId}] No new logs.`);
-            return;
-        }
-        for (const log of logs) {
-            const time = new Date(Number(log.timestamp)).toISOString();
-            console.log(`[${this.consumerId}] ${time} ${log.level} [${log.channel}] - ${log.message}`);
+            //   console.log(`[${this.consumerId}] No new logs.`);
+            return [];
         }
         const latest = logs[logs.length - 1].timestamp;
         if (latest !== undefined) {
             (0, offsetStore_1.setOffset)(this.consumerId, latest.toString());
             console.log(`✅ [${this.consumerId}] Updated offset to ${latest}`);
         }
+        return logs;
     }
 }
 exports.LogPilotConsumer = LogPilotConsumer;
