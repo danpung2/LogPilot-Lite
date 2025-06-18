@@ -9,7 +9,7 @@ export class LogPilotConsumer {
     private storage: string,
   ) {}
 
-  async consume(): Promise<void> {
+  async consume(): Promise<LogEntry[] | unknown> {
     const offset = Number(getOffset(this.consumerId)) || 0;
 
     let logs: LogEntry[];
@@ -17,17 +17,12 @@ export class LogPilotConsumer {
       logs = await fetchLogsSince(offset, this.channel, this.storage);
     } catch (err) {
       console.error(`[${this.consumerId}] ❌ Failed to fetch logs:`, err);
-      return;
+      return err;
     }
 
     if (!logs.length) {
-      console.log(`[${this.consumerId}] No new logs.`);
-      return;
-    }
-
-    for (const log of logs) {
-      const time = new Date(Number(log.timestamp)).toISOString();
-      console.log(`[${this.consumerId}] ${time} ${log.level} [${log.channel}] - ${log.message}`);
+    //   console.log(`[${this.consumerId}] No new logs.`);
+      return [];
     }
 
     const latest = logs[logs.length - 1].timestamp;
@@ -35,5 +30,7 @@ export class LogPilotConsumer {
       setOffset(this.consumerId, latest.toString());
       console.log(`✅ [${this.consumerId}] Updated offset to ${latest}`);
     }
+
+    return logs;
   }
 }
