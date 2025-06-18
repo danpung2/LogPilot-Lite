@@ -30,9 +30,8 @@ npm install git+https://github.com/danpung2/LogPilot-Lite-Client.git
 // producer.ts
 import { LogPilotClient } from "logpilot-lite-client";
 
-const client = new LogPilotClient(process.env.LOGPILOT_SERVER_URL || "localhost:50051");
-
-await client.produce({
+const producer = new LogPilotClient(process.env.LOGPILOT_SERVER_URL || "localhost:50051");
+await producer.produce({
   channel: 'job',
   level: 'ERROR',
   message: 'Token cleanup failed',
@@ -40,10 +39,18 @@ await client.produce({
   storage: 'sqlite'
 });
 
+
 // consumer.ts
+import { LogPilotClient } from "logpilot-lite-client";
+
+const consumer = new LogPilotConsumer(
+	"consumer-id",
+	process.env.LOGPILOT_CHANNEL || "job",
+	"sqlite"
+);
 const logs = await consumer.consume();
 if (logs && logs.length > 0) {
-    logs.map((log) => console.log("🧭 Consumed log:", log));
+    logs.map((log) => console.log(log));
 }
 ```
 
