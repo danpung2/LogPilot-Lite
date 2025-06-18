@@ -10,9 +10,10 @@
 
 - ✅ Rest API 버전과 gRPC 버전 제공
 - ✅ file(.log) 저장과 sqlite 저장 제공
-- 🚧 Docker로 쉽게 실행 가능한 서버 예정
-- 🚧 클라이언트는 TypeScript SDK를 통해 간단하게 로그 전송 예정
-- 🚧 Webhook 소비자, 파일 리텐션, 검색 API 등은 확장 예정
+- ✅ Docker로 쉽게 실행 가능한 서버
+- ✅ npm install을 통한 클라이언트 연결 및 로그 읽기/쓰기
+- ✅ 로그 읽기 consumer id를 통한 오프셋 (이어서 읽기)
+- 🚧 Webhook, 로그 리텐션, 검색 API 등 확장 예정
 
 ---
 
