@@ -1,19 +1,19 @@
 # LogPilot-Lite
 
-🚀 **LogPilot-Lite**는 **가볍고 단독 실행 가능한 로그 수집 시스템**입니다.
+🚀 **LogPilot-Lite** is a **lightweight, standalone log collection system**.
 
-로그 수집 및 분석이 필요한 개인 개발자 또는 소규모 시스템을 위한 대안으로 설계되었습니다.
+It is designed as an alternative for individual developers or small-scale systems that require log collection and analysis.
 
 ---
 
 ## ✨ Features
 
-- ✅ Rest API 버전과 gRPC 버전 제공
-- ✅ file(.log) 저장과 sqlite 저장 제공
-- ✅ Docker로 쉽게 실행 가능한 서버
-- ✅ npm install을 통한 클라이언트 연결 및 로그 읽기/쓰기
-- ✅ 로그 읽기 consumer id를 통한 오프셋 (이어서 읽기)
-- 🚧 Webhook, 로그 리텐션, 검색 API 등 확장 예정
+- ✅ Provides both REST API and gRPC versions
+- ✅ Supports file (.log) and SQLite storage
+- ✅ Easily runnable server with Docker
+- ✅ Client integration and log read/write via npm install
+- ✅ Log reading with consumer ID for offset-based continuation
+- 🚧 Webhook, log retention, search API, and more features coming soon
 
 ---
 
