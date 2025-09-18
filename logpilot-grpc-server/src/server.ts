@@ -16,9 +16,16 @@ export function startGrpcServer(): void {
 	server.bindAsync(
 		`0.0.0.0:${PORT}`,
 		grpc.ServerCredentials.createInsecure(),
-		() => {
-			console.log(`🚀 gRPC server listening on port ${PORT}`);
-			server.start();
+		(error: Error | null, port: number) => {
+			if (error) {
+				console.error('Failed to bind server:', error);
+				return;
+			}
+			console.log(`🚀 gRPC server listening on port ${port}`);
 		}
 	);
+}
+
+if (require.main === module) {
+	startGrpcServer();
 }

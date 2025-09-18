@@ -1,13 +1,26 @@
 {
   "name": "logpilot-lite",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "workspaces": [
     "logpilot-rest-server",
     "logpilot-grpc-server"
   ],
+  "main": "./dist/cjs/start-server.js",
+  "module": "./dist/esm/start-server.mjs",
+  "types": "./dist/types/start-server.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/start-server.js",
+      "import": "./dist/esm/start-server.mjs",
+      "types": "./dist/types/start-server.d.ts"
+    }
+  },
   "scripts": {
-    "build": "tsc -b",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:fix-extensions",
+    "build:cjs": "tsc -p tsconfig.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:fix-extensions": "node scripts/fix-extensions.js",
     "start": "ts-node --require tsconfig-paths/register start-server.ts",
     "dev:rest": "ts-node-dev --require tsconfig-paths/register logpilot-rest-server/src/server.ts",
     "dev:grpc": "ts-node-dev --require tsconfig-paths/register logpilot-grpc-server/src/server.ts"

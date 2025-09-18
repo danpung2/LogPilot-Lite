@@ -1,6 +1,23 @@
+# Source files (only ship built files)
 src/
+proto/
 *.ts
-logs/
-*.log
+tsconfig*.json
+
+# Development files
+.git*
+.vscode/
+.idea/
+
+# Test files
+test*/
+__tests__/
+*.test.*
+*.spec.*
+
+# Node modules
 node_modules/
-.env
+
+# Logs
+*.log
+logs/

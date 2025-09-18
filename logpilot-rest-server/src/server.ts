@@ -15,3 +15,7 @@ export function startRestServer(): void {
     console.log(`🚀 LogPilot REST Server listening on port ${PORT}`);
   });
 }
+
+if (require.main === module) {
+  startRestServer();
+}

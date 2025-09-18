@@ -2,10 +2,24 @@
   "name": "logpilot-lite-client",
   "version": "0.0.2",
   "description": "gRPC client for LogPilot-Lite gRPC",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/src/index.mjs",
+  "types": "./dist/types/src/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/src/index.js",
+      "import": "./dist/esm/src/index.mjs",
+      "types": "./dist/types/src/index.d.ts"
+    }
+  },
   "scripts": {
-    "build": "tsc && cp -r proto dist/"
+    "build": "npm run build:cjs && npm run build:esm && npm run copy-proto && npm run fix-extensions",
+    "build:cjs": "tsc -p tsconfig.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "copy-proto": "cp -r proto dist/cjs/ && cp -r proto dist/esm/",
+    "fix-extensions": "node ../scripts/fix-extensions.js",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "log",

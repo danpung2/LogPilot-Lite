@@ -4,6 +4,8 @@
 
 /**/storage
 
+/.idea
+/dist
 /data
 
 git-subtree-client.sh
