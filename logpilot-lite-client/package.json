@@ -1,7 +1,7 @@
 {
   "name": "logpilot-lite-client",
-  "version": "0.0.2",
-  "description": "gRPC client for LogPilot-Lite gRPC",
+  "version": "0.0.3",
+  "description": "LogPilot-Lite gRPC client for LogPilot-Lite gRPC server",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/src/index.mjs",
   "types": "./dist/types/src/index.d.ts",
@@ -27,7 +27,15 @@
     "client",
     "logpilot"
   ],
-  "author": "",
+  "homepage": "https://github.com/danpung2/LogPilot-Lite-Client",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danpung2/LogPilot-Lite-Client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/danpung2/LogPilot-Lite-Client/issues"
+  },
+  "author": "danpung2",
   "license": "MIT",
   "dependencies": {
     "@bufbuild/protobuf": "^2.5.2",

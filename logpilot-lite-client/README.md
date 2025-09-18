@@ -19,7 +19,11 @@ This package is intended to be bundled with your own source system and used to s
 Since this package is not published to npm, install it directly from a GitHub private repository:
 
 ```
-npm install git+https://github.com/danpung2/LogPilot-Lite-Client.git
+npm install logpilot-lite-client
+# or
+yarn add logpilot-lite-client
+# or
+pnpm add logpilot-lite-client
 ```
 
 ---
