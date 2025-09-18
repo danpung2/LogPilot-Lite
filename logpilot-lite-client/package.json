@@ -1,6 +1,6 @@
 {
   "name": "logpilot-lite-client",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "LogPilot-Lite gRPC client for LogPilot-Lite gRPC server",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/src/index.mjs",
