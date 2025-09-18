@@ -4,6 +4,12 @@ A lightweight TypeScript client for sending logs to a self-hosted LogPilot-Lite 
 
 This package is intended to be bundled with your own source system and used to send structured logs to a remote LogPilot-Lite server.
 
+## 🌟 LogPilot-Lite Server
+
+This client connects to the **LogPilot-Lite** gRPC server - a lightweight, standalone log collection system designed for individual developers and small-scale systems.
+
+👉 **[LogPilot-Lite](https://github.com/danpung2/LogPilot-Lite)** - Self-hosted log collection server with both REST API and gRPC support
+
 ---
 
 ## 🚀 Features
@@ -25,8 +31,6 @@ yarn add logpilot-lite-client
 # or
 pnpm add logpilot-lite-client
 ```
-
----
 
 ## 🛠 Usage
 
