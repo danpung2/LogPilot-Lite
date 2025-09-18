@@ -1,6 +1,5 @@
 {
 	"name": "logpilot-rest-server",
-	"version": "0.0.2",
 	"main": "index.js",
 	"scripts": {
 		"build": "tsc",

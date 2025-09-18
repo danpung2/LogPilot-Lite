@@ -19,21 +19,26 @@ It is designed as an alternative for individual developers or small-scale system
 
 ## Run With Docker
 ```
+docker pull danpung2/logpilot-lite:latest
+
 # REST Version
-docker run -p 8080:8080 \
+docker run -d -p 8080:8080 \
   -e LOGPILOT_MODE=rest \
   -e LOGPILOT_STORAGE_DIR=/data \
   -v $(pwd)/data:/data \
-  logpilot-lite:0.0.2
-```
-```
+  logpilot-lite:latest
+
+
 # gRPC Version
-docker run -p 50051:50051 \
+docker run -d -p 50051:50051 \
   -e LOGPILOT_MODE=grpc \
   -e LOGPILOT_STORAGE_DIR=/data \
   -v $(pwd)/data:/data \
-  logpilot-lite:0.0.2
+  logpilot-lite:latest
 ```
+
+**Note**: If you choose SQLite storage, your logs will be stored in `/data/logs.db` inside the container, which maps to `./data/logs.db` on your host machine.
+
 
 ## 📄 Log Entry Format
 
