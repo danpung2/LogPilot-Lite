@@ -6,3 +6,5 @@ export interface LogEntry {
   storage?: 'file' | 'sqlite';
   timestamp: number;
 }
+
+export * from '../schemas';
