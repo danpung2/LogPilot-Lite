@@ -2,10 +2,12 @@ import { Router, Request, Response } from 'express';
 import { writeLogToFile } from '@shared/services/fileWriter';
 import { writeLogToSQLite } from '@shared/services/sqliteWriter';
 import { LogEntry } from '@shared/types/log';
+import { validateBody } from '@shared/middleware/validation';
+import { LogEntrySchema } from '@shared/schemas';
 
 const router = Router();
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', validateBody(LogEntrySchema), async (req: Request, res: Response) => {
   try {
     const clientEntry = req.body;
 

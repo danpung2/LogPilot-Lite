@@ -12,22 +12,24 @@ import { readLogsFromSQLite } from "@shared/services/sqliteReader";
 import { readLogsFromFile } from "@shared/services/fileReader";
 import { writeLogToFile } from "@shared/services/fileWriter";
 import { writeLogToSQLite } from "@shared/services/sqliteWriter";
+import { validateGrpcRequest, handleGrpcError } from "@shared/middleware/grpcValidation";
+import { LogEntrySchema, FetchLogsRequestSchema } from "@shared/schemas";
 
 export const LogServiceHandlers = {
 	sendLog: async (
 		call: ServerUnaryCall<LogRequest, LogResponse>,
 		callback: sendUnaryData<LogResponse>
 	) => {
-		const request = call.request;
-		const entry = {
-			...request,
-			timestamp: Date.now(),
-			meta: request.meta ?? {},
-		} as SaveLogEntry;
-
-		const type = request.storage || "file";
-
 		try {
+			const request = validateGrpcRequest(LogEntrySchema, call.request);
+			const entry = {
+				...request,
+				timestamp: Date.now(),
+				meta: request.meta ?? {},
+			} as SaveLogEntry;
+
+			const type = request.storage || "file";
+
 			if (type === "sqlite") {
 				await writeLogToSQLite(entry);
 			} else if (type === "file") {
@@ -46,7 +48,7 @@ export const LogServiceHandlers = {
 			});
 		} catch (err) {
 			console.error("[❌ WRITE FAILED]", err);
-			callback(err as Error, null);
+			callback(handleGrpcError(err as Error), null);
 		}
 	},
 
@@ -54,26 +56,23 @@ export const LogServiceHandlers = {
 		call: ServerUnaryCall<FetchLogsRequest, FetchLogsResponse>,
 		callback: sendUnaryData<FetchLogsResponse>
 	) => {
-		const { since, channel, limit = 100, storage } = call.request;
-
-		if (!since || !channel || !storage) {
-			return callback(new Error("Missing required fields"), null);
-		}
-
-		const sinceTime = Number(since);
-		const readFn =
-			storage === "sqlite"
-				? readLogsFromSQLite
-				: storage === "file"
-				? readLogsFromFile
-				: null;
-
-		if (!readFn) {
-			return callback(new Error("Unsupported storage"), null);
-		}
-
 		try {
-			const rawLogs = await readFn(sinceTime, channel, limit);
+			const request = validateGrpcRequest(FetchLogsRequestSchema, call.request);
+			const { since, channel, limit = 100, storage } = request;
+
+			const sinceTime = Number(since);
+			const readFn =
+				storage === "sqlite"
+					? readLogsFromSQLite
+					: storage === "file"
+					? readLogsFromFile
+					: null;
+
+			if (!readFn) {
+				return callback(new Error("Unsupported storage"), null);
+			}
+
+			const rawLogs = readFn(sinceTime, channel, limit);
 
 			const logs: ResponseLogEntry[] = rawLogs.map((log) => ({
 				...log,
@@ -82,7 +81,7 @@ export const LogServiceHandlers = {
 
 			callback(null, { logs });
 		} catch (err) {
-			callback(err as Error, null);
+			callback(handleGrpcError(err as Error), null);
 		}
 	},
 };
