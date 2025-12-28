@@ -2,7 +2,7 @@
 // versions:
 //   protoc-gen-ts_proto  v2.7.5
 //   protoc               v5.29.3
-// source: proto/logpilot.proto
+// source: logpilot.proto
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
@@ -56,6 +56,7 @@ export interface FetchLogsRequest {
   channel: string;
   limit: number;
   storage: string;
+  consumerId: string;
 }
 
 export interface FetchLogsResponse {
@@ -199,10 +200,10 @@ export const LogRequest: MessageFns<LogRequest> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<LogRequest>, I>>(base?: I): LogRequest {
-    return LogRequest.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<LogRequest>): LogRequest {
+    return LogRequest.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<LogRequest>, I>>(object: I): LogRequest {
+  fromPartial(object: DeepPartial<LogRequest>): LogRequest {
     const message = createBaseLogRequest();
     message.channel = object.channel ?? "";
     message.level = object.level ?? "";
@@ -283,10 +284,10 @@ export const LogRequest_MetaEntry: MessageFns<LogRequest_MetaEntry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<LogRequest_MetaEntry>, I>>(base?: I): LogRequest_MetaEntry {
-    return LogRequest_MetaEntry.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<LogRequest_MetaEntry>): LogRequest_MetaEntry {
+    return LogRequest_MetaEntry.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<LogRequest_MetaEntry>, I>>(object: I): LogRequest_MetaEntry {
+  fromPartial(object: DeepPartial<LogRequest_MetaEntry>): LogRequest_MetaEntry {
     const message = createBaseLogRequest_MetaEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
@@ -359,10 +360,10 @@ export const LogResponse: MessageFns<LogResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<LogResponse>, I>>(base?: I): LogResponse {
-    return LogResponse.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<LogResponse>): LogResponse {
+    return LogResponse.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<LogResponse>, I>>(object: I): LogResponse {
+  fromPartial(object: DeepPartial<LogResponse>): LogResponse {
     const message = createBaseLogResponse();
     message.status = object.status ?? "";
     message.message = object.message ?? "";
@@ -480,10 +481,10 @@ export const ListLogsRequest: MessageFns<ListLogsRequest> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ListLogsRequest>, I>>(base?: I): ListLogsRequest {
-    return ListLogsRequest.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<ListLogsRequest>): ListLogsRequest {
+    return ListLogsRequest.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<ListLogsRequest>, I>>(object: I): ListLogsRequest {
+  fromPartial(object: DeepPartial<ListLogsRequest>): ListLogsRequest {
     const message = createBaseListLogsRequest();
     message.storage = object.storage ?? "";
     message.channel = object.channel ?? "";
@@ -542,10 +543,10 @@ export const ListLogsResponse: MessageFns<ListLogsResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ListLogsResponse>, I>>(base?: I): ListLogsResponse {
-    return ListLogsResponse.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<ListLogsResponse>): ListLogsResponse {
+    return ListLogsResponse.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<ListLogsResponse>, I>>(object: I): ListLogsResponse {
+  fromPartial(object: DeepPartial<ListLogsResponse>): ListLogsResponse {
     const message = createBaseListLogsResponse();
     message.logs = object.logs?.map((e) => LogEntry.fromPartial(e)) || [];
     return message;
@@ -553,7 +554,7 @@ export const ListLogsResponse: MessageFns<ListLogsResponse> = {
 };
 
 function createBaseFetchLogsRequest(): FetchLogsRequest {
-  return { since: "", channel: "", limit: 0, storage: "" };
+  return { since: "", channel: "", limit: 0, storage: "", consumerId: "" };
 }
 
 export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
@@ -569,6 +570,9 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     }
     if (message.storage !== "") {
       writer.uint32(34).string(message.storage);
+    }
+    if (message.consumerId !== "") {
+      writer.uint32(42).string(message.consumerId);
     }
     return writer;
   },
@@ -612,6 +616,14 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
           message.storage = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.consumerId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -627,6 +639,7 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
       channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
       storage: isSet(object.storage) ? globalThis.String(object.storage) : "",
+      consumerId: isSet(object.consumerId) ? globalThis.String(object.consumerId) : "",
     };
   },
 
@@ -644,18 +657,22 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     if (message.storage !== "") {
       obj.storage = message.storage;
     }
+    if (message.consumerId !== "") {
+      obj.consumerId = message.consumerId;
+    }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FetchLogsRequest>, I>>(base?: I): FetchLogsRequest {
-    return FetchLogsRequest.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<FetchLogsRequest>): FetchLogsRequest {
+    return FetchLogsRequest.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<FetchLogsRequest>, I>>(object: I): FetchLogsRequest {
+  fromPartial(object: DeepPartial<FetchLogsRequest>): FetchLogsRequest {
     const message = createBaseFetchLogsRequest();
     message.since = object.since ?? "";
     message.channel = object.channel ?? "";
     message.limit = object.limit ?? 0;
     message.storage = object.storage ?? "";
+    message.consumerId = object.consumerId ?? "";
     return message;
   },
 };
@@ -708,12 +725,175 @@ export const FetchLogsResponse: MessageFns<FetchLogsResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FetchLogsResponse>, I>>(base?: I): FetchLogsResponse {
-    return FetchLogsResponse.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<FetchLogsResponse>): FetchLogsResponse {
+    return FetchLogsResponse.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<FetchLogsResponse>, I>>(object: I): FetchLogsResponse {
+  fromPartial(object: DeepPartial<FetchLogsResponse>): FetchLogsResponse {
     const message = createBaseFetchLogsResponse();
     message.logs = object.logs?.map((e) => LogEntry.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+
+export interface SeekRequest {
+  channel: string;
+  consumerId: string;
+  type: string;
+  value: string;
+}
+
+export interface SeekResponse {
+  status: string;
+  newOffset: number;
+}
+
+function createBaseSeekRequest(): SeekRequest {
+  return { channel: "", consumerId: "", type: "", value: "" };
+}
+
+export const SeekRequest: MessageFns<SeekRequest> = {
+  encode(message: SeekRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.channel !== "") {
+      writer.uint32(10).string(message.channel);
+    }
+    if (message.consumerId !== "") {
+      writer.uint32(18).string(message.consumerId);
+    }
+    if (message.type !== "") {
+      writer.uint32(26).string(message.type);
+    }
+    if (message.value !== "") {
+      writer.uint32(34).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SeekRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSeekRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) break;
+          message.channel = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) break;
+          message.consumerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) break;
+          message.type = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) break;
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) break;
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SeekRequest {
+    return {
+      channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
+      consumerId: isSet(object.consumerId) ? globalThis.String(object.consumerId) : "",
+      type: isSet(object.type) ? globalThis.String(object.type) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: SeekRequest): unknown {
+    const obj: any = {};
+    if (message.channel !== "") obj.channel = message.channel;
+    if (message.consumerId !== "") obj.consumerId = message.consumerId;
+    if (message.type !== "") obj.type = message.type;
+    if (message.value !== "") obj.value = message.value;
+    return obj;
+  },
+
+  create(base?: DeepPartial<SeekRequest>): SeekRequest {
+    return SeekRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SeekRequest>): SeekRequest {
+    const message = createBaseSeekRequest();
+    message.channel = object.channel ?? "";
+    message.consumerId = object.consumerId ?? "";
+    message.type = object.type ?? "";
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseSeekResponse(): SeekResponse {
+  return { status: "", newOffset: 0 };
+}
+
+export const SeekResponse: MessageFns<SeekResponse> = {
+  encode(message: SeekResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== "") {
+      writer.uint32(10).string(message.status);
+    }
+    if (message.newOffset !== 0) {
+      writer.uint32(16).int64(message.newOffset);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SeekResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSeekResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) break;
+          message.status = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) break;
+          message.newOffset = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) break;
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SeekResponse {
+    return {
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      newOffset: isSet(object.newOffset) ? globalThis.Number(object.newOffset) : 0,
+    };
+  },
+
+  toJSON(message: SeekResponse): unknown {
+    const obj: any = {};
+    if (message.status !== "") obj.status = message.status;
+    if (message.newOffset !== 0) obj.newOffset = Math.round(message.newOffset);
+    return obj;
+  },
+
+  create(base?: DeepPartial<SeekResponse>): SeekResponse {
+    return SeekResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SeekResponse>): SeekResponse {
+    const message = createBaseSeekResponse();
+    message.status = object.status ?? "";
+    message.newOffset = object.newOffset ?? 0;
     return message;
   },
 };
@@ -842,10 +1022,10 @@ export const LogEntry: MessageFns<LogEntry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<LogEntry>, I>>(base?: I): LogEntry {
-    return LogEntry.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<LogEntry>): LogEntry {
+    return LogEntry.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<LogEntry>, I>>(object: I): LogEntry {
+  fromPartial(object: DeepPartial<LogEntry>): LogEntry {
     const message = createBaseLogEntry();
     message.channel = object.channel ?? "";
     message.level = object.level ?? "";
@@ -926,10 +1106,10 @@ export const LogEntry_MetaEntry: MessageFns<LogEntry_MetaEntry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<LogEntry_MetaEntry>, I>>(base?: I): LogEntry_MetaEntry {
-    return LogEntry_MetaEntry.fromPartial(base ?? ({} as any));
+  create(base?: DeepPartial<LogEntry_MetaEntry>): LogEntry_MetaEntry {
+    return LogEntry_MetaEntry.fromPartial(base ?? {});
   },
-  fromPartial<I extends Exact<DeepPartial<LogEntry_MetaEntry>, I>>(object: I): LogEntry_MetaEntry {
+  fromPartial(object: DeepPartial<LogEntry_MetaEntry>): LogEntry_MetaEntry {
     const message = createBaseLogEntry_MetaEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
@@ -966,12 +1146,22 @@ export const LogServiceService = {
     responseSerialize: (value: FetchLogsResponse): Buffer => Buffer.from(FetchLogsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): FetchLogsResponse => FetchLogsResponse.decode(value),
   },
+  seek: {
+    path: "/logpilot.LogService/Seek",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: SeekRequest): Buffer => Buffer.from(SeekRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SeekRequest => SeekRequest.decode(value),
+    responseSerialize: (value: SeekResponse): Buffer => Buffer.from(SeekResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): SeekResponse => SeekResponse.decode(value),
+  },
 } as const;
 
 export interface LogServiceServer extends UntypedServiceImplementation {
   sendLog: handleUnaryCall<LogRequest, LogResponse>;
   listLogs: handleUnaryCall<ListLogsRequest, ListLogsResponse>;
   fetchLogs: handleUnaryCall<FetchLogsRequest, FetchLogsResponse>;
+  seek: handleUnaryCall<SeekRequest, SeekResponse>;
 }
 
 export interface LogServiceClient extends Client {
@@ -1017,6 +1207,21 @@ export interface LogServiceClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: FetchLogsResponse) => void,
   ): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
 }
 
 export const LogServiceClient = makeGenericClientConstructor(LogServiceService, "logpilot.LogService") as unknown as {
@@ -1032,10 +1237,6 @@ export type DeepPartial<T> = T extends Builtin ? T
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function longToNumber(int64: { toString(): string }): number {
   const num = globalThis.Number(int64.toString());
@@ -1061,6 +1262,6 @@ export interface MessageFns<T> {
   decode(input: BinaryReader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
   toJSON(message: T): unknown;
-  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
-  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
+  create(base?: DeepPartial<T>): T;
+  fromPartial(object: DeepPartial<T>): T;
 }

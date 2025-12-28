@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import {
   VALIDATION_LIMITS,
+  ERROR_MESSAGES,
   LOG_LEVELS,
   STORAGE_TYPES,
-  DEFAULT_VALUES,
-  ERROR_MESSAGES
+  DEFAULT_VALUES
 } from '@shared/constants';
 
 export const LogEntrySchema = z.object({
@@ -53,9 +53,9 @@ export const LogEntrySchema = z.object({
 });
 
 export const FetchLogsRequestSchema = z.object({
-  since: z.number()
-    .int(ERROR_MESSAGES.FETCH_LOGS.SINCE_NOT_INTEGER)
-    .nonnegative(ERROR_MESSAGES.FETCH_LOGS.SINCE_NEGATIVE),
+  since: z.union([z.string(), z.number()])
+    .transform((val: string | number) => Number(val))
+    .refine((val: number) => !isNaN(val) && val >= 0, ERROR_MESSAGES.FETCH_LOGS.SINCE_NEGATIVE),
 
   channel: z.string()
     .min(VALIDATION_LIMITS.CHANNEL.MIN_LENGTH, ERROR_MESSAGES.CHANNEL.EMPTY)
@@ -73,6 +73,8 @@ export const FetchLogsRequestSchema = z.object({
     errorMap: () => ({ message: ERROR_MESSAGES.STORAGE.INVALID })
   }),
 
+  consumerId: z.string().optional(),
+
   maxBytes: z.number()
     .int('Max bytes must be an integer')
     .positive('Max bytes must be positive')
@@ -84,3 +86,13 @@ export type LogEntryInput = z.input<typeof LogEntrySchema>;
 export type LogEntryOutput = z.output<typeof LogEntrySchema>;
 export type FetchLogsRequestInput = z.input<typeof FetchLogsRequestSchema>;
 export type FetchLogsRequestOutput = z.output<typeof FetchLogsRequestSchema>;
+
+export const SeekRequestSchema = z.object({
+  channel: z.string().min(1),
+  consumerId: z.string().min(1),
+  type: z.enum(['BEGINNING', 'END', 'TIMESTAMP']),
+  value: z.string().optional()
+});
+
+export type SeekRequestInput = z.input<typeof SeekRequestSchema>;
+export type SeekRequestOutput = z.output<typeof SeekRequestSchema>;

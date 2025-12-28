@@ -56,6 +56,7 @@ export interface FetchLogsRequest {
   channel: string;
   limit: number;
   storage: string;
+  consumerId: string;
 }
 
 export interface FetchLogsResponse {
@@ -553,7 +554,7 @@ export const ListLogsResponse: MessageFns<ListLogsResponse> = {
 };
 
 function createBaseFetchLogsRequest(): FetchLogsRequest {
-  return { since: "", channel: "", limit: 0, storage: "" };
+  return { since: "", channel: "", limit: 0, storage: "", consumerId: "" };
 }
 
 export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
@@ -569,6 +570,9 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     }
     if (message.storage !== "") {
       writer.uint32(34).string(message.storage);
+    }
+    if (message.consumerId !== "") {
+      writer.uint32(42).string(message.consumerId);
     }
     return writer;
   },
@@ -612,6 +616,14 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
           message.storage = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.consumerId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -627,6 +639,7 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
       channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
       storage: isSet(object.storage) ? globalThis.String(object.storage) : "",
+      consumerId: isSet(object.consumerId) ? globalThis.String(object.consumerId) : "",
     };
   },
 
@@ -644,6 +657,9 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     if (message.storage !== "") {
       obj.storage = message.storage;
     }
+    if (message.consumerId !== "") {
+      obj.consumerId = message.consumerId;
+    }
     return obj;
   },
 
@@ -656,6 +672,7 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     message.channel = object.channel ?? "";
     message.limit = object.limit ?? 0;
     message.storage = object.storage ?? "";
+    message.consumerId = object.consumerId ?? "";
     return message;
   },
 };
@@ -714,6 +731,169 @@ export const FetchLogsResponse: MessageFns<FetchLogsResponse> = {
   fromPartial(object: DeepPartial<FetchLogsResponse>): FetchLogsResponse {
     const message = createBaseFetchLogsResponse();
     message.logs = object.logs?.map((e) => LogEntry.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+
+export interface SeekRequest {
+  channel: string;
+  consumerId: string;
+  type: string;
+  value: string;
+}
+
+export interface SeekResponse {
+  status: string;
+  newOffset: number;
+}
+
+function createBaseSeekRequest(): SeekRequest {
+  return { channel: "", consumerId: "", type: "", value: "" };
+}
+
+export const SeekRequest: MessageFns<SeekRequest> = {
+  encode(message: SeekRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.channel !== "") {
+      writer.uint32(10).string(message.channel);
+    }
+    if (message.consumerId !== "") {
+      writer.uint32(18).string(message.consumerId);
+    }
+    if (message.type !== "") {
+      writer.uint32(26).string(message.type);
+    }
+    if (message.value !== "") {
+      writer.uint32(34).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SeekRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSeekRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) break;
+          message.channel = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) break;
+          message.consumerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) break;
+          message.type = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) break;
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) break;
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SeekRequest {
+    return {
+      channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
+      consumerId: isSet(object.consumerId) ? globalThis.String(object.consumerId) : "",
+      type: isSet(object.type) ? globalThis.String(object.type) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: SeekRequest): unknown {
+    const obj: any = {};
+    if (message.channel !== "") obj.channel = message.channel;
+    if (message.consumerId !== "") obj.consumerId = message.consumerId;
+    if (message.type !== "") obj.type = message.type;
+    if (message.value !== "") obj.value = message.value;
+    return obj;
+  },
+
+  create(base?: DeepPartial<SeekRequest>): SeekRequest {
+    return SeekRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SeekRequest>): SeekRequest {
+    const message = createBaseSeekRequest();
+    message.channel = object.channel ?? "";
+    message.consumerId = object.consumerId ?? "";
+    message.type = object.type ?? "";
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseSeekResponse(): SeekResponse {
+  return { status: "", newOffset: 0 };
+}
+
+export const SeekResponse: MessageFns<SeekResponse> = {
+  encode(message: SeekResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== "") {
+      writer.uint32(10).string(message.status);
+    }
+    if (message.newOffset !== 0) {
+      writer.uint32(16).int64(message.newOffset);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SeekResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSeekResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) break;
+          message.status = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) break;
+          message.newOffset = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) break;
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SeekResponse {
+    return {
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      newOffset: isSet(object.newOffset) ? globalThis.Number(object.newOffset) : 0,
+    };
+  },
+
+  toJSON(message: SeekResponse): unknown {
+    const obj: any = {};
+    if (message.status !== "") obj.status = message.status;
+    if (message.newOffset !== 0) obj.newOffset = Math.round(message.newOffset);
+    return obj;
+  },
+
+  create(base?: DeepPartial<SeekResponse>): SeekResponse {
+    return SeekResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SeekResponse>): SeekResponse {
+    const message = createBaseSeekResponse();
+    message.status = object.status ?? "";
+    message.newOffset = object.newOffset ?? 0;
     return message;
   },
 };
@@ -966,12 +1146,22 @@ export const LogServiceService = {
     responseSerialize: (value: FetchLogsResponse): Buffer => Buffer.from(FetchLogsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): FetchLogsResponse => FetchLogsResponse.decode(value),
   },
+  seek: {
+    path: "/logpilot.LogService/Seek",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: SeekRequest): Buffer => Buffer.from(SeekRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SeekRequest => SeekRequest.decode(value),
+    responseSerialize: (value: SeekResponse): Buffer => Buffer.from(SeekResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): SeekResponse => SeekResponse.decode(value),
+  },
 } as const;
 
 export interface LogServiceServer extends UntypedServiceImplementation {
   sendLog: handleUnaryCall<LogRequest, LogResponse>;
   listLogs: handleUnaryCall<ListLogsRequest, ListLogsResponse>;
   fetchLogs: handleUnaryCall<FetchLogsRequest, FetchLogsResponse>;
+  seek: handleUnaryCall<SeekRequest, SeekResponse>;
 }
 
 export interface LogServiceClient extends Client {
@@ -1016,6 +1206,21 @@ export interface LogServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: FetchLogsResponse) => void,
+  ): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
   ): ClientUnaryCall;
 }
 

@@ -6,6 +6,7 @@ service LogService {
   rpc SendLog (LogRequest) returns (LogResponse);
   rpc ListLogs (ListLogsRequest) returns (ListLogsResponse);
   rpc FetchLogs (FetchLogsRequest) returns (FetchLogsResponse);
+  rpc Seek (SeekRequest) returns (SeekResponse);
 }
 
 message LogRequest {
@@ -38,6 +39,19 @@ message FetchLogsRequest {
   string channel = 2;
   int32 limit = 3;
   string storage = 4;
+  string consumerId = 5;
+}
+
+message SeekRequest {
+  string channel = 1;
+  string consumerId = 2;
+  string type = 3; // "BEGINNING", "END", "TIMESTAMP"
+  string value = 4;
+}
+
+message SeekResponse {
+  string status = 1;
+  int64 newOffset = 2;
 }
 
 message FetchLogsResponse {

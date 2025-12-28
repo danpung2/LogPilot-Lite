@@ -20,5 +20,12 @@ db.exec(`
     message TEXT,
     timestamp INTEGER,
     meta TEXT
-  )
+  );
+
+  CREATE TABLE IF NOT EXISTS consumer_offsets (
+    consumer_id TEXT,
+    channel TEXT,
+    last_timestamp INTEGER,
+    PRIMARY KEY (consumer_id, channel)
+  );
 `);

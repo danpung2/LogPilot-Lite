@@ -1,5 +1,4 @@
-import { fetchLogsSince } from './grpcClient';
-import { getOffset, setOffset } from './offsetStore';
+import { fetchLogs, seek } from './grpcClient';
 import { LogEntry } from './../proto/logpilot';
 
 export class LogPilotConsumer {
@@ -10,27 +9,24 @@ export class LogPilotConsumer {
   ) {}
 
   async consume(): Promise<LogEntry[] | unknown> {
-    const offset = Number(getOffset(this.consumerId)) || 0;
-
-    let logs: LogEntry[];
     try {
-      logs = await fetchLogsSince(offset, this.channel, this.storage);
+      const logs = await fetchLogs(this.channel, this.storage, this.consumerId);
+      return logs;
     } catch (err) {
       console.error(`[${this.consumerId}] ❌ Failed to fetch logs:`, err);
       return err;
     }
+  }
 
-    if (!logs.length) {
-    //   console.log(`[${this.consumerId}] No new logs.`);
-      return [];
-    }
+  async seekToBeginning(): Promise<number> {
+    return seek(this.channel, this.consumerId, 'BEGINNING');
+  }
 
-    const latest = logs[logs.length - 1].timestamp;
-    if (latest !== undefined) {
-      setOffset(this.consumerId, latest.toString());
-      console.log(`✅ [${this.consumerId}] Updated offset to ${latest}`);
-    }
+  async seekToEnd(): Promise<number> {
+    return seek(this.channel, this.consumerId, 'END');
+  }
 
-    return logs;
+  async seekToTimestamp(timestamp: number): Promise<number> {
+    return seek(this.channel, this.consumerId, 'TIMESTAMP', timestamp.toString());
   }
 }
