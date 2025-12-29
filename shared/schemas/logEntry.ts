@@ -22,11 +22,11 @@ export const LogEntrySchema = z.object({
     .max(VALIDATION_LIMITS.MESSAGE.MAX_LENGTH, ERROR_MESSAGES.MESSAGE.TOO_LONG),
 
   meta: z.record(
-      z.string()
-        .max(VALIDATION_LIMITS.META.MAX_KEY_LENGTH, ERROR_MESSAGES.META.KEY_TOO_LONG),
-      z.string()
-        .max(VALIDATION_LIMITS.META.MAX_VALUE_LENGTH, ERROR_MESSAGES.META.VALUE_TOO_LONG)
-    )
+    z.string()
+      .max(VALIDATION_LIMITS.META.MAX_KEY_LENGTH, ERROR_MESSAGES.META.KEY_TOO_LONG),
+    z.string()
+      .max(VALIDATION_LIMITS.META.MAX_VALUE_LENGTH, ERROR_MESSAGES.META.VALUE_TOO_LONG)
+  )
     .refine(
       (obj: Record<string, string>) => Object.keys(obj).length <= VALIDATION_LIMITS.META.MAX_PROPERTIES,
       ERROR_MESSAGES.META.TOO_MANY_PROPERTIES
@@ -49,7 +49,9 @@ export const LogEntrySchema = z.object({
       },
       ERROR_MESSAGES.TIMESTAMP.TOO_MUCH_DRIFT
     )
-    .optional()
+    .optional(),
+
+  id: z.number().optional()
 });
 
 export const FetchLogsRequestSchema = z.object({
@@ -90,9 +92,20 @@ export type FetchLogsRequestOutput = z.output<typeof FetchLogsRequestSchema>;
 export const SeekRequestSchema = z.object({
   channel: z.string().min(1),
   consumerId: z.string().min(1),
-  type: z.enum(['BEGINNING', 'END', 'TIMESTAMP']),
-  value: z.string().optional()
+  operation: z.enum(['EARLIEST', 'LATEST', 'SPECIFIC']),
+  logId: z.number().optional(),
+  storage: z.enum(STORAGE_TYPES).optional().default('file')
 });
 
 export type SeekRequestInput = z.input<typeof SeekRequestSchema>;
 export type SeekRequestOutput = z.output<typeof SeekRequestSchema>;
+
+export const SendLogsRequestSchema = z.object({
+  log_requests: z.array(LogEntrySchema)
+});
+
+export const CommitRequestSchema = z.object({
+  channel: z.string().min(1),
+  consumerId: z.string().min(1),
+  lastLogId: z.number().int()
+});

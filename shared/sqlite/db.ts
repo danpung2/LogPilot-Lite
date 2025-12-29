@@ -3,10 +3,10 @@ import path from "path";
 import fs from 'fs';
 
 const baseDir =
-	process.env.LOGPILOT_STORAGE_DIR || path.join(__dirname, "../../storage");
+  process.env.LOGPILOT_STORAGE_DIR || path.join(__dirname, "../../storage");
 
 if (!fs.existsSync(baseDir)) {
-	fs.mkdirSync(baseDir, { recursive: true });
+  fs.mkdirSync(baseDir, { recursive: true });
 }
 const dbPath = path.join(baseDir, "logs.db");
 
@@ -25,7 +25,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS consumer_offsets (
     consumer_id TEXT,
     channel TEXT,
-    last_timestamp INTEGER,
+    last_log_id INTEGER,
     PRIMARY KEY (consumer_id, channel)
   );
 `);

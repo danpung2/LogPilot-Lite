@@ -5,6 +5,7 @@ export interface LogEntry {
   meta?: Record<string, string>;
   storage?: 'file' | 'sqlite';
   timestamp: number;
+  id?: number;
 }
 
 export * from '../schemas';

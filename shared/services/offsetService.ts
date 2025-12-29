@@ -2,29 +2,29 @@ import { db } from '../sqlite/db';
 
 export function getOffset(consumerId: string, channel: string): number {
   const stmt = db.prepare(`
-    SELECT last_timestamp FROM consumer_offsets
+    SELECT last_log_id FROM consumer_offsets
     WHERE consumer_id = ? AND channel = ?
   `);
-  const row = stmt.get(consumerId, channel) as { last_timestamp: number } | undefined;
-  return row ? row.last_timestamp : 0;
+  const row = stmt.get(consumerId, channel) as { last_log_id: number } | undefined;
+  return row ? row.last_log_id : 0;
 }
 
-export function setOffset(consumerId: string, channel: string, timestamp: number): void {
+export function setOffset(consumerId: string, channel: string, logId: number): void {
   const stmt = db.prepare(`
-    INSERT INTO consumer_offsets (consumer_id, channel, last_timestamp)
+    INSERT INTO consumer_offsets (consumer_id, channel, last_log_id)
     VALUES (?, ?, ?)
-    ON CONFLICT(consumer_id, channel) DO UPDATE SET last_timestamp = excluded.last_timestamp
+    ON CONFLICT(consumer_id, channel) DO UPDATE SET last_log_id = excluded.last_log_id
   `);
-  stmt.run(consumerId, channel, timestamp);
+  stmt.run(consumerId, channel, logId);
 }
 
-export function getLatestLogTimestamp(channel: string): number {
+export function getLatestLogId(channel: string): number {
   const stmt = db.prepare(`
-    SELECT timestamp FROM logs
+    SELECT id FROM logs
     WHERE channel = ?
-    ORDER BY timestamp DESC
+    ORDER BY id DESC
     LIMIT 1
   `);
-  const row = stmt.get(channel) as { timestamp: number } | undefined;
-  return row ? row.timestamp : 0;
+  const row = stmt.get(channel) as { id: number } | undefined;
+  return row ? row.id : 0;
 }

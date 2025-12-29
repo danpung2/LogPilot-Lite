@@ -1,22 +1,24 @@
 import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
 import {
-	LogEntry as ResponseLogEntry,
+	LogRequest,
+	LogResponse,
 	FetchLogsRequest,
 	FetchLogsResponse,
-	LogResponse,
-	LogRequest,
 	SeekRequest,
 	SeekResponse,
+	SendLogsRequest,
+	SendLogsResponse,
+	ListLogsRequest,
+	ListLogsResponse,
+	LogEntry as ProtoLogEntry
 } from "../proto/logpilot";
 import { LogEntry as SaveLogEntry } from "@shared/types/log";
-import { LogServiceService } from "../proto/logpilot";
-import { readLogsFromSQLite } from "@shared/services/sqliteReader";
-import { readLogsFromFile } from "@shared/services/fileReader";
-import { writeLogToFile } from "@shared/services/fileWriter";
-import { writeLogToSQLite } from "@shared/services/sqliteWriter";
-import { getOffset, setOffset, getLatestLogTimestamp } from "@shared/services/offsetService";
-import { validateGrpcRequest, handleGrpcError } from "@shared/middleware/grpcValidation";
-import { LogEntrySchema, FetchLogsRequestSchema } from "@shared/schemas";
+import { readLogsFromSQLite, listLogsFromSQLite } from "@shared/services/sqliteReader";
+import { readLogsFromFile, listLogsFromFile } from "@shared/services/fileReader";
+import { writeLogToFile, writeLogsToFile } from "@shared/services/fileWriter";
+import { writeLogToSQLite, writeLogsToSQLite } from "@shared/services/sqliteWriter";
+import { getOffset, setOffset, getLatestLogId } from "@shared/services/offsetService";
+import { handleGrpcError } from "@shared/middleware/grpcValidation";
 
 export const LogServiceHandlers = {
 	sendLog: async (
@@ -24,33 +26,58 @@ export const LogServiceHandlers = {
 		callback: sendUnaryData<LogResponse>
 	) => {
 		try {
-			const request = validateGrpcRequest(LogEntrySchema, call.request);
-			const entry = {
-				...request,
-				timestamp: Date.now(),
-				meta: request.meta ?? {},
-			} as SaveLogEntry;
+			const request = call.request;
+			const entry: SaveLogEntry = {
+				channel: request.channel,
+				level: request.level,
+				message: request.message,
+				meta: request.meta,
+				storage: (request.storage as any) || "sqlite",
+				timestamp: Date.now()
+			};
 
-			const type = request.storage || "file";
-
+			const type = entry.storage || "sqlite";
 			if (type === "sqlite") {
 				await writeLogToSQLite(entry);
-			} else if (type === "file") {
-				await writeLogToFile(entry);
 			} else {
-				return callback(
-					new Error(`Unsupported storage: ${type}`),
-					null
-				);
+				await writeLogToFile(entry);
 			}
 
-			console.log("[✅ SAVED]", entry);
-			callback(null, {
-				status: "ok",
-				message: "Log stored successfully",
-			});
+			callback(null, { status: "ok", message: "Log stored" });
 		} catch (err) {
-			console.error("[❌ WRITE FAILED]", err);
+			console.error("[❌ SEND FAILED]", err);
+			callback(handleGrpcError(err as Error), null);
+		}
+	},
+
+	sendLogs: async (
+		call: ServerUnaryCall<SendLogsRequest, SendLogsResponse>,
+		callback: sendUnaryData<SendLogsResponse>
+	) => {
+		try {
+			const { logRequests } = call.request;
+			const now = Date.now();
+			const entries: SaveLogEntry[] = logRequests.map(r => ({
+				channel: r.channel,
+				level: r.level,
+				message: r.message,
+				meta: r.meta,
+				storage: (r.storage as any) || "sqlite",
+				timestamp: now
+			}));
+
+			if (entries.length > 0) {
+				const type = entries[0].storage || "sqlite";
+				if (type === "sqlite") {
+					await writeLogsToSQLite(entries);
+				} else {
+					await writeLogsToFile(entries);
+				}
+			}
+
+			callback(null, { status: "ok", message: `${entries.length} logs stored` });
+		} catch (err) {
+			console.error("[❌ BATCH SEND FAILED]", err);
 			callback(handleGrpcError(err as Error), null);
 		}
 	},
@@ -60,42 +87,40 @@ export const LogServiceHandlers = {
 		callback: sendUnaryData<FetchLogsResponse>
 	) => {
 		try {
-			const request = validateGrpcRequest(FetchLogsRequestSchema, call.request);
-			const { since, channel, limit = 100, storage, consumerId } = request;
+			const { since, channel, limit, storage } = call.request;
 
-			let sinceTime = Number(since);
+			const metadataMap = call.metadata.getMap();
+			const consumerId = (metadataMap['consumer-id'] as string) || (metadataMap['consumerid'] as string);
+
+			let sinceId = Number(since) || 0;
 
 			// 1. Offset Resolution
-			if (isNaN(sinceTime) || sinceTime === 0) {
-				if (consumerId) {
-					sinceTime = getOffset(consumerId, channel);
-				} else {
-					sinceTime = 0;
-				}
+			// 1. 오프셋 해결 (Offset Resolution)
+			if ((isNaN(sinceId) || sinceId === 0) && consumerId) {
+				sinceId = getOffset(consumerId, channel);
 			}
 
-			const readFn =
-				storage === "sqlite"
-					? readLogsFromSQLite
-					: storage === "file"
-					? readLogsFromFile
-					: null;
+			const readFn = storage === "sqlite" ? readLogsFromSQLite : readLogsFromFile;
 
-			if (!readFn) {
-				return callback(new Error("Unsupported storage"), null);
-			}
+			const rawLogs = readFn(sinceId, channel, limit || 100);
 
-			const rawLogs = readFn(sinceTime, channel, limit);
-
-			const logs: ResponseLogEntry[] = rawLogs.map((log) => ({
-				...log,
-				meta: log.meta ?? {},
+			const logs: ProtoLogEntry[] = rawLogs.map(log => ({
+				channel: log.channel,
+				level: log.level,
+				message: log.message,
+				meta: log.meta || {},
+				timestamp: log.timestamp,
+				id: log.id || 0
 			}));
 
-			// 2. Auto Commit
+			// 2. Auto Commit if consumerId is present
+			// 2. consumerId가 존재하는 경우 자동 커밋
 			if (consumerId && logs.length > 0) {
 				const lastLog = logs[logs.length - 1];
-				setOffset(consumerId, channel, Number(lastLog.timestamp));
+				// Use ID for SQLite, timestamp for File (emulated ID)
+				// SQLite의 경우 ID 사용, 파일의 경우 타임스탬프(에뮬레이트된 ID) 사용
+				const commitId = lastLog.id || lastLog.timestamp;
+				setOffset(consumerId, channel, Number(commitId));
 			}
 
 			callback(null, { logs });
@@ -109,24 +134,52 @@ export const LogServiceHandlers = {
 		callback: sendUnaryData<SeekResponse>
 	) => {
 		try {
-			const { channel, consumerId, type, value } = call.request;
+			const { channel, consumerId, operation, logId } = call.request;
 			let newOffset = 0;
 
-			if (type === "BEGINNING") {
+			if (operation === "EARLIEST") {
 				newOffset = 0;
-			} else if (type === "END") {
-				newOffset = getLatestLogTimestamp(channel);
-			} else if (type === "TIMESTAMP") {
-				newOffset = Number(value);
+			} else if (operation === "LATEST") {
+				newOffset = getLatestLogId(channel);
+			} else if (operation === "SPECIFIC") {
+				newOffset = Number(logId);
 			}
 
 			setOffset(consumerId, channel, newOffset);
-			callback(null, { status: "ok", newOffset });
+			callback(null, { status: "ok", message: "Offset updated" });
 		} catch (err) {
 			console.error("[❌ SEEK FAILED]", err);
 			callback(handleGrpcError(err as Error), null);
 		}
 	},
-};
 
-export { LogServiceService };
+	listLogs: async (
+		call: ServerUnaryCall<ListLogsRequest, ListLogsResponse>,
+		callback: sendUnaryData<ListLogsResponse>
+	) => {
+		try {
+			const { storage, channel, level, fromTimestamp, toTimestamp } = call.request;
+			const readFn = storage === 'file' ? listLogsFromFile : listLogsFromSQLite;
+
+			// Default range if not provided: last 24 hours
+			// 범위가 제공되지 않은 경우 기본값: 최근 24시간
+			const end = toTimestamp > 0 ? toTimestamp : Date.now();
+			const start = fromTimestamp > 0 ? fromTimestamp : end - (24 * 60 * 60 * 1000);
+
+			const rawLogs = readFn(start, end, channel, level, 100);
+
+			const logs: ProtoLogEntry[] = rawLogs.map(log => ({
+				channel: log.channel,
+				level: log.level,
+				message: log.message,
+				meta: log.meta || {},
+				timestamp: log.timestamp,
+				id: log.id || 0
+			}));
+
+			callback(null, { logs });
+		} catch (err) {
+			callback(handleGrpcError(err as Error), null);
+		}
+	}
+};

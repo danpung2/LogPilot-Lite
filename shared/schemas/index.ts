@@ -7,5 +7,7 @@ export {
   type FetchLogsRequestInput,
   type FetchLogsRequestOutput,
   type SeekRequestInput,
-  type SeekRequestOutput
+  type SeekRequestOutput,
+  SendLogsRequestSchema,
+  CommitRequestSchema
 } from './logEntry';

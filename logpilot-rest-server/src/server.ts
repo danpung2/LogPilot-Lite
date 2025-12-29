@@ -8,7 +8,7 @@ export function startRestServer(): void {
 
   const app = express();
   app.use(express.json());
-  app.use('/logs', router);
+  app.use('/api/logs', router);
 
   const PORT = process.env.PORT || 8080;
   app.listen(PORT, () => {
