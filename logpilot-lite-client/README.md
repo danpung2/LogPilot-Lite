@@ -1,87 +1,87 @@
-# 📦 LogPilot-Lite Client
+# LogPilot-Lite Client 🔌
 
-A lightweight TypeScript client for sending logs to a self-hosted LogPilot-Lite server using gRPC.
-
-This package is intended to be bundled with your own source system and used to send structured logs to a remote LogPilot-Lite server.
-
-## 🌟 LogPilot-Lite Server
-
-This client connects to the **LogPilot-Lite** gRPC server - a lightweight, standalone log collection system designed for individual developers and small-scale systems.
-
-👉 **[LogPilot-Lite](https://github.com/danpung2/LogPilot-Lite)** - Self-hosted log collection server with both REST API and gRPC support
-
----
-
-## 🚀 Features
-
-- gRPC-based communication
-- Simple log interface: `produce(entry)` | `consume()`
-- Configurable server address and channel
-
----
+The official TypeScript client for **[LogPilot-Lite](../README.md)**.
+Easily integrate your Node.js applications with the LogPilot-Lite gRPC server.
 
 ## 📦 Installation
 
-Since this package is not published to npm, install it directly from a GitHub private repository:
+Since this package is part of the LogPilot-Lite monorepo, you can install it directly from GitHub or local path.
 
+```bash
+# Install via GitHub
+npm install git+https://github.com/danpung2/LogPilot-Lite.git#main
+
+# Or if you are in the same repo
+npm install ./logpilot-lite-client
 ```
-npm install logpilot-lite-client
-# or
-yarn add logpilot-lite-client
-# or
-pnpm add logpilot-lite-client
-```
 
-## 🛠 Usage
+> **Requirements:** Node.js **20+** is recommended.
 
-```ts
-// producer.ts
-import { LogPilotClient } from "logpilot-lite-client";
+## 🚀 Usage
 
-const producer = new LogPilotClient(process.env.LOGPILOT_SERVER_URL || "localhost:50051");
-await producer.produce({
-  channel: 'job',
-  level: 'ERROR',
-  message: 'Token cleanup failed',
-  meta: { error: 'Refresh token not found' },
-  storage: 'sqlite'
-});
+### 1. Producer (Send Logs)
+Send logs to the LogPilot-Lite server.
 
+```typescript
+import { LogPilotProducer } from "logpilot-lite-client";
 
-// consumer.ts
-import { LogPilotClient } from "logpilot-lite-client";
+// Connect to gRPC server (default: localhost:50051)
+const producer = new LogPilotProducer("localhost:50051");
 
-const consumer = new LogPilotConsumer(
-	"consumer-id",
-	process.env.LOGPILOT_CHANNEL || "job",
-	"sqlite"
-);
-const logs = await consumer.consume();
-if (logs && logs.length > 0) {
-    logs.map((log) => console.log(log));
+async function sendLog() {
+  try {
+    await producer.produce({
+      channel: 'orders',
+      level: 'INFO',
+      message: 'Order #1234 created',
+      meta: { userId: 'user-1' },
+      meta: { userId: 'user-1' }
+      // storage: 'sqlite' (Default)
+    });
+    console.log("Log sent successfully!");
+  } catch (err) {
+    console.error("Failed to send log:", err);
+  }
 }
 ```
 
----
+### 2. Consumer (Read Logs)
+Consume logs with built-in offset management.
 
-## 📄 Log Entry Format
+```typescript
+import { LogPilotConsumer } from "logpilot-lite-client";
 
-| Field     | Type                     | Required | Description |
-|-----------|--------------------------|----------|-------------|
-| `channel` | `string`                 | ✅ Yes   | The source or category of the log (e.g., `"auth"`, `"payment"`, `"system"`) |
-| `level`   | `string`                 | ✅ Yes   | Log severity level. Common values: `"DEBUG"`, `"INFO"`, `"WARN"`, `"ERROR"` |
-| `message` | `string`                 | ✅ Yes   | Human-readable log message |
-| `meta`    | `object` (key-value map) | ❌ No    | Optional metadata for the log (e.g., user ID, IP address, etc.) |
-| `storage` | `"file"` or `"sqlite"`   | ❌ No    | Determines how the log is stored. Defaults to `"file"` if omitted |
+const consumer = new LogPilotConsumer({
+  serverAddress: "localhost:50051",
+  channel: "orders",
+  consumerId: "order-processor-service", // Unique ID for offset tracking
+  storage: "sqlite"
+});
 
----
+async function processLogs() {
+  // Fetch new logs starting from last committed offset
+  const logs = await consumer.consume(10); // Fetch up to 10 logs
 
-## 🧪 Example App
+  if (logs.length > 0) {
+    console.log(`Received ${logs.length} logs:`);
+    logs.forEach(log => console.log(log.message));
+  } else {
+    console.log("No new logs.");
+  }
+}
+```
 
-A working example is available here:
+## 🛠 API Reference
 
-👉 [LogPilot-Lite-Client-Example](https://github.com/danpung2/LogPilot-Lite-Client-Example)
+### `LogPilotProducer`
+- `constructor(address: string)`
+- `produce(entry: LogEntry): Promise<void>`
 
-It simulates a periodic cleanup job that logs failures to LogPilot-Lite server.
+### `LogPilotConsumer`
+- `constructor(config: ConsumerConfig)`
+- `consume(limit?: number): Promise<LogEntry[]>`
+  - Automatically commits the offset after fetching.
 
----
+## 📄 License
+
+MIT License.

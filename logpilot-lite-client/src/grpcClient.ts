@@ -1,52 +1,62 @@
-import { LogServiceClient, LogEntry, FetchLogsRequest, FetchLogsResponse, SeekRequest, SeekResponse } from './../proto/logpilot';
-import { credentials, ServiceError } from '@grpc/grpc-js';
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
+import path from 'path';
+import {
+  FetchLogsRequest,
+  FetchLogsResponse,
+  SeekRequest,
+  SeekResponse,
+  LogEntry
+} from '../proto/logpilot';
 
-const client = new LogServiceClient(
-  process.env.LOGPILOT_SERVER_URL || 'localhost:50051',
-  credentials.createInsecure()
-);
+const PROTO_PATH = path.join(__dirname, '../proto/logpilot.proto');
 
-export async function fetchLogs(
-  channel: string,
-  storage: string,
-  consumerId: string,
-  since: number = 0,
-  limit: number = 100
-): Promise<LogEntry[]> {
-  const request: FetchLogsRequest = {
-    since: since.toString(),
-    channel,
-    limit,
-    storage,
-    consumerId
-  };
+const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+});
 
+const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
+const DEFAULT_ADDR = process.env.LOGPILOT_SERVER_URL || 'localhost:50051';
+const client = new protoDescriptor.logpilot.LogService(DEFAULT_ADDR, grpc.credentials.createInsecure());
+
+export function fetchLogs(channel: string, storage: string, consumerId?: string): Promise<LogEntry[]> {
   return new Promise((resolve, reject) => {
-    client.fetchLogs(request, (err, response: FetchLogsResponse) => {
+    const req: any = {
+      channel,
+      storage,
+      since: '0',
+      limit: 100
+    };
+
+    const metadata = new grpc.Metadata();
+    if (consumerId) {
+      metadata.add('consumer-id', consumerId);
+    }
+
+    client.FetchLogs(req, metadata, (err: any, response: FetchLogsResponse) => {
       if (err) return reject(err);
-      if (!response.logs) return resolve([]);
-      resolve(response.logs);
+      resolve(response.logs || []);
     });
   });
 }
 
-export async function seek(
-  channel: string,
-  consumerId: string,
-  type: 'BEGINNING' | 'END' | 'TIMESTAMP',
-  value: string = ''
-): Promise<number> {
-  const request: SeekRequest = {
-    channel,
-    consumerId,
-    type,
-    value
-  };
-
+export function seek(channel: string, consumerId: string, operation: 'EARLIEST' | 'LATEST' | 'SPECIFIC', logId?: number): Promise<number> {
   return new Promise((resolve, reject) => {
-    client.seek(request, (err: ServiceError | null, response: SeekResponse) => {
+    const req: any = {
+      channel,
+      consumerId,
+      operation,
+      logId: logId || 0,
+      storage: 'file'
+    };
+
+    client.Seek(req, (err: any, response: SeekResponse) => {
       if (err) return reject(err);
-      resolve(response.newOffset);
+      resolve(0);
     });
   });
 }

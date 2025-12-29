@@ -5,7 +5,7 @@ const path = require('path');
  * Fix ESM imports by adding .js extensions to relative imports
  * This is required for ESM modules to work properly
  */
-function fixExtensions(dir, isESM = false) {
+function fixExtensions(dir, isESM = false, rootDir = dir) {
   const files = fs.readdirSync(dir);
 
   for (const file of files) {
@@ -13,24 +13,33 @@ function fixExtensions(dir, isESM = false) {
     const stat = fs.statSync(filePath);
 
     if (stat.isDirectory()) {
-      fixExtensions(filePath, isESM);
+      fixExtensions(filePath, isESM, rootDir);
     } else if (file.endsWith('.js')) {
       let content = fs.readFileSync(filePath, 'utf8');
 
+      // Calculate relative paths to modules
+      const currentDir = path.dirname(filePath);
+      const sharedPath = path.relative(currentDir, path.join(rootDir, 'shared'));
+      const grpcPath = path.relative(currentDir, path.join(rootDir, 'logpilot-grpc-server/src'));
+      const restPath = path.relative(currentDir, path.join(rootDir, 'logpilot-rest-server/src'));
+
+      // Helper to format path (ensure it starts with ./ or ../)
+      const formatPath = (p) => p.startsWith('.') ? p : './' + p;
+
       if (isESM) {
         // ESM needs .js extensions
-        // Fix alias imports: @shared/* → ../shared/*
+        // Fix alias imports
         content = content.replace(
           /from\s+["']@shared\/([^"']*?)["']/g,
-          'from "../shared/$1.js"'
+          (match, p1) => `from "${formatPath(path.join(sharedPath, p1))}.js"`
         );
         content = content.replace(
           /from\s+["']@grpc-server\/([^"']*?)["']/g,
-          'from "../logpilot-grpc-server/src/$1.js"'
+          (match, p1) => `from "${formatPath(path.join(grpcPath, p1))}.js"`
         );
         content = content.replace(
           /from\s+["']@rest-server\/([^"']*?)["']/g,
-          'from "../logpilot-rest-server/src/$1.js"'
+          (match, p1) => `from "${formatPath(path.join(restPath, p1))}.js"`
         );
 
         // Fix relative imports: from './module' to './module.js'
@@ -46,18 +55,18 @@ function fixExtensions(dir, isESM = false) {
         );
       } else {
         // CommonJS doesn't need extensions
-        // Fix alias requires: @shared/* → ../shared/*
+        // Fix alias requires
         content = content.replace(
           /require\s*\(\s*["']@shared\/([^"']*?)["']\s*\)/g,
-          'require("../shared/$1")'
+          (match, p1) => `require("${formatPath(path.join(sharedPath, p1))}")`
         );
         content = content.replace(
           /require\s*\(\s*["']@grpc-server\/([^"']*?)["']\s*\)/g,
-          'require("../logpilot-grpc-server/src/$1")'
+          (match, p1) => `require("${formatPath(path.join(grpcPath, p1))}")`
         );
         content = content.replace(
           /require\s*\(\s*["']@rest-server\/([^"']*?)["']\s*\)/g,
-          'require("../logpilot-rest-server/src/$1")'
+          (match, p1) => `require("${formatPath(path.join(restPath, p1))}")`
         );
       }
 
