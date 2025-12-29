@@ -20,10 +20,11 @@
     }
   },
   "scripts": {
-    "build": "npm run build:cjs && npm run build:esm && npm run build:fix-extensions",
+    "build": "npm run build:cjs && npm run build:esm && npm run copy-assets && npm run build:fix-extensions",
     "build:cjs": "tsc -p tsconfig.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:fix-extensions": "node scripts/fix-extensions.js",
+    "copy-assets": "mkdir -p dist/cjs/logpilot-grpc-server/proto && cp logpilot-grpc-server/proto/* dist/cjs/logpilot-grpc-server/proto/",
     "start": "ts-node --require tsconfig-paths/register start-server.ts",
     "dev:rest": "ts-node-dev --require tsconfig-paths/register logpilot-rest-server/src/server.ts",
     "dev:grpc": "ts-node-dev --require tsconfig-paths/register logpilot-grpc-server/src/server.ts"

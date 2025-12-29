@@ -5,14 +5,10 @@ Node.js 애플리케이션을 LogPilot-Lite gRPC 서버와 쉽게 연동할 수 
 
 ## 📦 설치 (Installation)
 
-이 패키지는 LogPilot-Lite 모노레포의 일부이므로, GitHub 또는 로컬 경로를 통해 직접 설치할 수 있습니다.
+npm을 통해 패키지를 직접 설치할 수 있습니다:
 
 ```bash
-# GitHub를 통한 설치
-npm install git+https://github.com/danpung2/LogPilot-Lite.git#main
-
-# 또는 같은 레포지토리 내에서 작업 중인 경우
-npm install ./logpilot-lite-client
+npm install logpilot-lite-client
 ```
 
 > **필수 조건:** Node.js **20 버전 이상**을 권장합니다.

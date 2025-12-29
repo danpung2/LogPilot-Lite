@@ -5,14 +5,10 @@ Easily integrate your Node.js applications with the LogPilot-Lite gRPC server.
 
 ## 📦 Installation
 
-Since this package is part of the LogPilot-Lite monorepo, you can install it directly from GitHub or local path.
+Install the package directly from npm:
 
 ```bash
-# Install via GitHub
-npm install git+https://github.com/danpung2/LogPilot-Lite.git#main
-
-# Or if you are in the same repo
-npm install ./logpilot-lite-client
+npm install logpilot-lite-client
 ```
 
 > **Requirements:** Node.js **20+** is recommended.

@@ -1,6 +1,6 @@
 {
   "name": "logpilot-lite-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "LogPilot-Lite gRPC client for LogPilot-Lite gRPC server",
   "files": [
     "dist",

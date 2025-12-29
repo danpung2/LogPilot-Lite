@@ -6,15 +6,16 @@ WORKDIR /app
 COPY package.json tsconfig.json tsconfig.esm.json ./
 COPY logpilot-rest-server/package.json ./logpilot-rest-server/
 COPY logpilot-grpc-server/package.json ./logpilot-grpc-server/
-COPY logpilot-lite-client/package.json ./logpilot-lite-client/
-COPY logpilot-lite-demo-produce/package.json ./logpilot-lite-demo-produce/
-COPY logpilot-lite-demo-consume/package.json ./logpilot-lite-demo-consume/
 
-# Install dependencies
+RUN node -e "const pkg=require('./package.json'); pkg.workspaces = pkg.workspaces.filter(w => !w.includes('client') && !w.includes('demo')); require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+
+# Install dependencies for server only
 RUN npm install
 
 # Copy source code
 COPY . .
+
+RUN rm -rf logpilot-lite-client logpilot-lite-demo-produce logpilot-lite-demo-consume
 
 # Build
 RUN npm run build
