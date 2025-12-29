@@ -13,7 +13,6 @@ Traditional event streaming platforms (like Kafka) and even full-featured versio
 | **Core** | Java (Spring Boot) | Node.js (TypeScript) |
 | **Scale** | Medium-Scale / Distributed | Small-Scale / Single Node |
 | **Project Structure** | Multi-Module (Gradle) | Monorepo (npm workspaces) |
-| **Storage** | Pluggable Drivers (MySQL, etc.) | SQLite (Default) / File System |
 | **Deployment** | Kubernetes / Multi-Container | Single Docker Container / Process |
 
 ## 🚀 Key Features
