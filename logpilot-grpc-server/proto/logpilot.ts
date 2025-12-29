@@ -6,6 +6,18 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import {
+  type CallOptions,
+  type ChannelCredentials,
+  Client,
+  type ClientOptions,
+  type ClientUnaryCall,
+  type handleUnaryCall,
+  makeGenericClientConstructor,
+  type Metadata,
+  type ServiceError,
+  type UntypedServiceImplementation,
+} from "@grpc/grpc-js";
 
 export const protobufPackage = "logpilot";
 
@@ -67,6 +79,12 @@ export interface SeekRequest {
   operation: string;
   /** Only for SPECIFIC */
   logId: number;
+  storage: string;
+}
+
+export interface SeekOffsetRequest {
+  channel: string;
+  consumerId: string;
   storage: string;
 }
 
@@ -994,6 +1012,98 @@ export const SeekRequest: MessageFns<SeekRequest> = {
   },
 };
 
+function createBaseSeekOffsetRequest(): SeekOffsetRequest {
+  return { channel: "", consumerId: "", storage: "" };
+}
+
+export const SeekOffsetRequest: MessageFns<SeekOffsetRequest> = {
+  encode(message: SeekOffsetRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.channel !== "") {
+      writer.uint32(10).string(message.channel);
+    }
+    if (message.consumerId !== "") {
+      writer.uint32(18).string(message.consumerId);
+    }
+    if (message.storage !== "") {
+      writer.uint32(26).string(message.storage);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SeekOffsetRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSeekOffsetRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.channel = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.consumerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.storage = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SeekOffsetRequest {
+    return {
+      channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
+      consumerId: isSet(object.consumerId) ? globalThis.String(object.consumerId) : "",
+      storage: isSet(object.storage) ? globalThis.String(object.storage) : "",
+    };
+  },
+
+  toJSON(message: SeekOffsetRequest): unknown {
+    const obj: any = {};
+    if (message.channel !== "") {
+      obj.channel = message.channel;
+    }
+    if (message.consumerId !== "") {
+      obj.consumerId = message.consumerId;
+    }
+    if (message.storage !== "") {
+      obj.storage = message.storage;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<SeekOffsetRequest>, I>>(base?: I): SeekOffsetRequest {
+    return SeekOffsetRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<SeekOffsetRequest>, I>>(object: I): SeekOffsetRequest {
+    const message = createBaseSeekOffsetRequest();
+    message.channel = object.channel ?? "";
+    message.consumerId = object.consumerId ?? "";
+    message.storage = object.storage ?? "";
+    return message;
+  },
+};
+
 function createBaseSeekResponse(): SeekResponse {
   return { status: "", message: "" };
 }
@@ -1305,62 +1415,199 @@ export const LogEntry_MetaEntry: MessageFns<LogEntry_MetaEntry> = {
   },
 };
 
-export interface LogService {
-  SendLog(request: LogRequest): Promise<LogResponse>;
+export type LogServiceService = typeof LogServiceService;
+export const LogServiceService = {
+  sendLog: {
+    path: "/logpilot.LogService/SendLog",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: LogRequest): Buffer => Buffer.from(LogRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): LogRequest => LogRequest.decode(value),
+    responseSerialize: (value: LogResponse): Buffer => Buffer.from(LogResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): LogResponse => LogResponse.decode(value),
+  },
   /** LogPilot extension */
-  SendLogs(request: SendLogsRequest): Promise<SendLogsResponse>;
-  ListLogs(request: ListLogsRequest): Promise<ListLogsResponse>;
-  FetchLogs(request: FetchLogsRequest): Promise<FetchLogsResponse>;
-  Seek(request: SeekRequest): Promise<SeekResponse>;
+  sendLogs: {
+    path: "/logpilot.LogService/SendLogs",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: SendLogsRequest): Buffer => Buffer.from(SendLogsRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SendLogsRequest => SendLogsRequest.decode(value),
+    responseSerialize: (value: SendLogsResponse): Buffer => Buffer.from(SendLogsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): SendLogsResponse => SendLogsResponse.decode(value),
+  },
+  listLogs: {
+    path: "/logpilot.LogService/ListLogs",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: ListLogsRequest): Buffer => Buffer.from(ListLogsRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): ListLogsRequest => ListLogsRequest.decode(value),
+    responseSerialize: (value: ListLogsResponse): Buffer => Buffer.from(ListLogsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ListLogsResponse => ListLogsResponse.decode(value),
+  },
+  fetchLogs: {
+    path: "/logpilot.LogService/FetchLogs",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: FetchLogsRequest): Buffer => Buffer.from(FetchLogsRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): FetchLogsRequest => FetchLogsRequest.decode(value),
+    responseSerialize: (value: FetchLogsResponse): Buffer => Buffer.from(FetchLogsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): FetchLogsResponse => FetchLogsResponse.decode(value),
+  },
+  /** Unified Seek */
+  seek: {
+    path: "/logpilot.LogService/Seek",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: SeekRequest): Buffer => Buffer.from(SeekRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SeekRequest => SeekRequest.decode(value),
+    responseSerialize: (value: SeekResponse): Buffer => Buffer.from(SeekResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): SeekResponse => SeekResponse.decode(value),
+  },
+  /** Backward Compatibility for Original LogPilot */
+  seekToEnd: {
+    path: "/logpilot.LogService/SeekToEnd",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: SeekOffsetRequest): Buffer => Buffer.from(SeekOffsetRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SeekOffsetRequest => SeekOffsetRequest.decode(value),
+    responseSerialize: (value: SeekResponse): Buffer => Buffer.from(SeekResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): SeekResponse => SeekResponse.decode(value),
+  },
+  seekToBeginning: {
+    path: "/logpilot.LogService/SeekToBeginning",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: SeekOffsetRequest): Buffer => Buffer.from(SeekOffsetRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SeekOffsetRequest => SeekOffsetRequest.decode(value),
+    responseSerialize: (value: SeekResponse): Buffer => Buffer.from(SeekResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): SeekResponse => SeekResponse.decode(value),
+  },
+} as const;
+
+export interface LogServiceServer extends UntypedServiceImplementation {
+  sendLog: handleUnaryCall<LogRequest, LogResponse>;
+  /** LogPilot extension */
+  sendLogs: handleUnaryCall<SendLogsRequest, SendLogsResponse>;
+  listLogs: handleUnaryCall<ListLogsRequest, ListLogsResponse>;
+  fetchLogs: handleUnaryCall<FetchLogsRequest, FetchLogsResponse>;
+  /** Unified Seek */
+  seek: handleUnaryCall<SeekRequest, SeekResponse>;
+  /** Backward Compatibility for Original LogPilot */
+  seekToEnd: handleUnaryCall<SeekOffsetRequest, SeekResponse>;
+  seekToBeginning: handleUnaryCall<SeekOffsetRequest, SeekResponse>;
 }
 
-export const LogServiceServiceName = "logpilot.LogService";
-export class LogServiceClientImpl implements LogService {
-  private readonly rpc: Rpc;
-  private readonly service: string;
-  constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || LogServiceServiceName;
-    this.rpc = rpc;
-    this.SendLog = this.SendLog.bind(this);
-    this.SendLogs = this.SendLogs.bind(this);
-    this.ListLogs = this.ListLogs.bind(this);
-    this.FetchLogs = this.FetchLogs.bind(this);
-    this.Seek = this.Seek.bind(this);
-  }
-  SendLog(request: LogRequest): Promise<LogResponse> {
-    const data = LogRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "SendLog", data);
-    return promise.then((data) => LogResponse.decode(new BinaryReader(data)));
-  }
-
-  SendLogs(request: SendLogsRequest): Promise<SendLogsResponse> {
-    const data = SendLogsRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "SendLogs", data);
-    return promise.then((data) => SendLogsResponse.decode(new BinaryReader(data)));
-  }
-
-  ListLogs(request: ListLogsRequest): Promise<ListLogsResponse> {
-    const data = ListLogsRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "ListLogs", data);
-    return promise.then((data) => ListLogsResponse.decode(new BinaryReader(data)));
-  }
-
-  FetchLogs(request: FetchLogsRequest): Promise<FetchLogsResponse> {
-    const data = FetchLogsRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "FetchLogs", data);
-    return promise.then((data) => FetchLogsResponse.decode(new BinaryReader(data)));
-  }
-
-  Seek(request: SeekRequest): Promise<SeekResponse> {
-    const data = SeekRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "Seek", data);
-    return promise.then((data) => SeekResponse.decode(new BinaryReader(data)));
-  }
+export interface LogServiceClient extends Client {
+  sendLog(request: LogRequest, callback: (error: ServiceError | null, response: LogResponse) => void): ClientUnaryCall;
+  sendLog(
+    request: LogRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: LogResponse) => void,
+  ): ClientUnaryCall;
+  sendLog(
+    request: LogRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: LogResponse) => void,
+  ): ClientUnaryCall;
+  /** LogPilot extension */
+  sendLogs(
+    request: SendLogsRequest,
+    callback: (error: ServiceError | null, response: SendLogsResponse) => void,
+  ): ClientUnaryCall;
+  sendLogs(
+    request: SendLogsRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SendLogsResponse) => void,
+  ): ClientUnaryCall;
+  sendLogs(
+    request: SendLogsRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SendLogsResponse) => void,
+  ): ClientUnaryCall;
+  listLogs(
+    request: ListLogsRequest,
+    callback: (error: ServiceError | null, response: ListLogsResponse) => void,
+  ): ClientUnaryCall;
+  listLogs(
+    request: ListLogsRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: ListLogsResponse) => void,
+  ): ClientUnaryCall;
+  listLogs(
+    request: ListLogsRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ListLogsResponse) => void,
+  ): ClientUnaryCall;
+  fetchLogs(
+    request: FetchLogsRequest,
+    callback: (error: ServiceError | null, response: FetchLogsResponse) => void,
+  ): ClientUnaryCall;
+  fetchLogs(
+    request: FetchLogsRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: FetchLogsResponse) => void,
+  ): ClientUnaryCall;
+  fetchLogs(
+    request: FetchLogsRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: FetchLogsResponse) => void,
+  ): ClientUnaryCall;
+  /** Unified Seek */
+  seek(request: SeekRequest, callback: (error: ServiceError | null, response: SeekResponse) => void): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seek(
+    request: SeekRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  /** Backward Compatibility for Original LogPilot */
+  seekToEnd(
+    request: SeekOffsetRequest,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seekToEnd(
+    request: SeekOffsetRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seekToEnd(
+    request: SeekOffsetRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seekToBeginning(
+    request: SeekOffsetRequest,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seekToBeginning(
+    request: SeekOffsetRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
+  seekToBeginning(
+    request: SeekOffsetRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SeekResponse) => void,
+  ): ClientUnaryCall;
 }
 
-interface Rpc {
-  request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
-}
+export const LogServiceClient = makeGenericClientConstructor(LogServiceService, "logpilot.LogService") as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): LogServiceClient;
+  service: typeof LogServiceService;
+  serviceName: string;
+};
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 

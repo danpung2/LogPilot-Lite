@@ -10,6 +10,7 @@ import {
 	SendLogsResponse,
 	ListLogsRequest,
 	ListLogsResponse,
+	SeekOffsetRequest,
 	LogEntry as ProtoLogEntry
 } from "../proto/logpilot";
 import { LogEntry as SaveLogEntry } from "@shared/types/log";
@@ -162,7 +163,6 @@ export const LogServiceHandlers = {
 			const readFn = storage === 'file' ? listLogsFromFile : listLogsFromSQLite;
 
 			// Default range if not provided: last 24 hours
-			// 범위가 제공되지 않은 경우 기본값: 최근 24시간
 			const end = toTimestamp > 0 ? toTimestamp : Date.now();
 			const start = fromTimestamp > 0 ? fromTimestamp : end - (24 * 60 * 60 * 1000);
 
@@ -179,6 +179,35 @@ export const LogServiceHandlers = {
 
 			callback(null, { logs });
 		} catch (err) {
+			callback(handleGrpcError(err as Error), null);
+		}
+	},
+
+	seekToEnd: async (
+		call: ServerUnaryCall<SeekOffsetRequest, SeekResponse>,
+		callback: sendUnaryData<SeekResponse>
+	) => {
+		try {
+			const { channel, consumerId } = call.request;
+			const newOffset = getLatestLogId(channel);
+			setOffset(consumerId, channel, newOffset);
+			callback(null, { status: "ok", message: "Offset updated to END" });
+		} catch (err) {
+			console.error("[❌ SEEK TO END FAILED]", err);
+			callback(handleGrpcError(err as Error), null);
+		}
+	},
+
+	seekToBeginning: async (
+		call: ServerUnaryCall<SeekOffsetRequest, SeekResponse>,
+		callback: sendUnaryData<SeekResponse>
+	) => {
+		try {
+			const { channel, consumerId } = call.request;
+			setOffset(consumerId, channel, 0);
+			callback(null, { status: "ok", message: "Offset updated to BEGINNING" });
+		} catch (err) {
+			console.error("[❌ SEEK TO BEGINNING FAILED]", err);
 			callback(handleGrpcError(err as Error), null);
 		}
 	}
