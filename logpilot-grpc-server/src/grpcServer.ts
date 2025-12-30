@@ -88,10 +88,11 @@ export const LogServiceHandlers = {
 		callback: sendUnaryData<FetchLogsResponse>
 	) => {
 		try {
-			const { since, channel, limit, storage } = call.request;
+			const { since, channel, limit, storage, consumerId: bodyConsumerId } = call.request;
 
 			const metadataMap = call.metadata.getMap();
-			const consumerId = (metadataMap['consumer-id'] as string) || (metadataMap['consumerid'] as string);
+			const metaConsumerId = (metadataMap['consumer-id'] as string) || (metadataMap['consumerid'] as string);
+			const consumerId = bodyConsumerId || metaConsumerId;
 
 			let sinceId = Number(since) || 0;
 

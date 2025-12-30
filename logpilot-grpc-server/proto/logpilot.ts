@@ -66,6 +66,7 @@ export interface FetchLogsRequest {
   channel: string;
   limit: number;
   storage: string;
+  consumerId: string;
 }
 
 export interface FetchLogsResponse {
@@ -723,7 +724,7 @@ export const ListLogsResponse: MessageFns<ListLogsResponse> = {
 };
 
 function createBaseFetchLogsRequest(): FetchLogsRequest {
-  return { since: "", channel: "", limit: 0, storage: "" };
+  return { since: "", channel: "", limit: 0, storage: "", consumerId: "" };
 }
 
 export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
@@ -739,6 +740,9 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     }
     if (message.storage !== "") {
       writer.uint32(34).string(message.storage);
+    }
+    if (message.consumerId !== "") {
+      writer.uint32(42).string(message.consumerId);
     }
     return writer;
   },
@@ -782,6 +786,14 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
           message.storage = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.consumerId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -797,6 +809,7 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
       channel: isSet(object.channel) ? globalThis.String(object.channel) : "",
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
       storage: isSet(object.storage) ? globalThis.String(object.storage) : "",
+      consumerId: isSet(object.consumerId) ? globalThis.String(object.consumerId) : "",
     };
   },
 
@@ -814,6 +827,9 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     if (message.storage !== "") {
       obj.storage = message.storage;
     }
+    if (message.consumerId !== "") {
+      obj.consumerId = message.consumerId;
+    }
     return obj;
   },
 
@@ -826,6 +842,7 @@ export const FetchLogsRequest: MessageFns<FetchLogsRequest> = {
     message.channel = object.channel ?? "";
     message.limit = object.limit ?? 0;
     message.storage = object.storage ?? "";
+    message.consumerId = object.consumerId ?? "";
     return message;
   },
 };
