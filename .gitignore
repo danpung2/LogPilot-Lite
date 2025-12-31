@@ -8,5 +8,6 @@
 /**/dist
 /data
 
+.DS_Store
 git-subtree-client.sh
-docker-build.sh
+
